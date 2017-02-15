@@ -1,6 +1,9 @@
 var LocalStrategy = require('passport-local').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
 
 var User = require('../app/model/user');
+var configAuth = require('./auth');
+
 
 module.exports = function(passport){
 
@@ -30,7 +33,7 @@ module.exports = function(passport){
                 } else{
                     var newUser = new User();
                     newUser.local.username = username;
-                    newUser.local.password = password;
+                    newUser.local.password = newUser.generateHash(password);
 
                     newUser.save(function(err){
                         if(err){
@@ -55,10 +58,47 @@ module.exports = function(passport){
                     return done(err);
                 if(!user)
                     return done(null, false, req.flash('loginMessage', 'No user found'));
-                if(user.local.password != password)
+                if(!user.validatePassword(password))
                     return done(null,false,req.flash('loginMessage', 'Invalid password'));
                 return done(null, user);
             });
         });
     }));
+
+    passport.use(new FacebookStrategy({
+    clientID: configAuth.facebook.clientID,
+    clientSecret: configAuth.facebook.clientSecret,
+    callbackURL: configAuth.facebook.callbackURL,
+    profileFields: ['id','photos', 'email', 'name']
+  },
+    function(accessToken, refreshToken, profile, done) {
+       process.nextTick(function(){
+           User.findOne({'facebook.id': profile.id}, function(err,user) {
+               if(err)
+                return done(err);
+                if(user)
+                return done(null, user);
+                else
+                    var newUser = new User();
+                    newUser.facebook.id = profile.id;
+                    newUser.facebook.token = accessToken;
+                    newUser.facebook.name = profile.name.givenName +  " " + profile.name.familyName;
+                    newUser.facebook.email = profile.emails[0].value;
+                    newUser.facebook.username = profile.username;
+                    newUser.facebook.profilePictureURL = //graph.facebook.com/"newUser.facebook.id"/picture";
+                 
+                    
+                   
+
+                    newUser.save(function(err){
+                        if(err)
+                            throw err;
+                        return done(null, newUser);
+                    })
+           });
+       });
+    }
+    ));
+
+
 }
