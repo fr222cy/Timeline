@@ -23,21 +23,55 @@
 
     </div>
   </nav>
+   
+     <div class="center container">
+        <span class="center"><img class="center" src="images/loading.gif"/></span>
+        <p id="leaveQueueButton" class="center"><a href="/lobby" class="btn"><span class="fa fa"></span> Leave Queue</a></p>
+        <h3 id="peopleLeft"></h3>
+        <h5 id="inqueue"></h5>
+        </div>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
-
+  <% var name = user.facebook.name; %>
+  <% var id = user.facebook.id; %>
     <script>
       var socket = io();
-
+      var name = "<%= name %>";
+      var id = "<%= id %>";
+      var users;
       socket.on('connect', function (data) {
-        socket.emit('storeClientInfo', { customId:"<%= user.facebook.id %>", name: "<%= user.facebook.name %>"});
+        socket.emit('storeClientInfo', { customId: id, name: name });
       });
 
-       socket.on('inQueue', function(msg){
-           console.log(msg);
-      });     
+      socket.on('queue', function(data){
+        document.getElementById("peopleLeft").innerHTML = "Waiting for players : " + data.totalInQueue + "/" + data.maxPlayers;
+        document.getElementById("inqueue").innerHTML = data.inQueue
+      });  
+
+      socket.on('gameReady', function(data){
+        document.getElementById("peopleLeft").innerHTML = "All here!starting in 5 seconds";
+        document.getElementById("leaveQueueButton").hidden = true;
+        var i = 5;
+
+        var myinterval = setInterval(function() {
+        document.getElementById("inqueue").innerHTML = "Quitting now gives a temporary ban";
+        document.getElementById("peopleLeft").innerHTML = "All here! starting in "+i+" seconds";
+        
+
+        if (i === 0) {
+            window.location.href = data.url
+            clearInterval(myInterval);
+            
+        }else {
+            i--;
+        }
+        }, 1000);
+         
+       
+      });   
     </script>
-     
+  
 
  
 

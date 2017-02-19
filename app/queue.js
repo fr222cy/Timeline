@@ -1,42 +1,78 @@
-
-
-
 module.exports = function(app, io){
- var queue = [];
- var clients =[];
- const maxQueue = 5;
-     io.on('connection', function(socket){
-        queue.push(socket.id); 
+
+    var queueHandler = require("./model/queueHandler.js");
+    var qh = new queueHandler();
+    var gameStarting = false;
+
+    io.on('connection', function(socket){   
         
-        io.emit('inQueue', "People in queue: " + queue.length + "| Need " + (maxQueue - queue.length) + " to proceed" );
-        console.log('user connected:');
+        socket.on('storeClientInfo', function (data) {
+            if(!isUserAlreadyInQueue(data.customId)){
+                var user = new Object();
+                user.customId = data.customId;
+                user.name = data.name;
+                user.socketId = socket.id;
+                qh.addUser(user);
 
-         socket.on('storeClientInfo', function (data) {
-
-            var clientInfo = new Object();
-            clientInfo.customId = data.customId;
-            clientInfo.name = data.name;
-            clientInfo.clientId = socket.id;
-            clients.push(clientInfo);
+                if(qh.getAmountOfUsers() >= qh.getMaxPlayers()){
+                    qh.clear();
+                    redirectToNewGame();
+                }
+            }
+            notify();
         });
-
-       
-        console.log("Queue Length" + queue.length);
 
         socket.on('disconnect', function(){
-            var name;
-            clients.forEach(function(element){
-                if(element.clientId = socket.id){
-                    name = element.name;
-                }
-            });
-
-            io.emit('inQueue', + name +" left the queue!" );
-            queue.splice(queue.indexOf(socket.id));
+            console.log("Socket to be removed: "+ socket.id);
+            qh.removeUser(socket.id); 
+            notify();
         });
 
+        function redirectToNewGame(){
+        
+            var urlString = "/game/"+generateRandomID();
+            io.emit("gameReady", {url: urlString} );
+        }
+
+        function notify(){
+            userInQueueString = "Players in queue: ";
+            qh.getAllUsersInQueue().forEach(function(element, index , arr){
+                userInQueueString += "<br>" + element;
+            });
+           
+            io.emit("queue",{ 
+            inQueue: userInQueueString,
+            totalInQueue: qh.getAmountOfUsers(),
+            maxPlayers: qh.getMaxPlayers()
+            });
+        }
     });
 
+    function isUserAlreadyInQueue(customId) {
+        var result = false;
+        var clients = qh.getClients();
+        if(clients == null)
+            return false;
+        
+        
+        clients.forEach(function(element) {
+            if(element.customId == customId)
+                result = true;      
+        });
+    
+        return result;
+    }
+
+    function generateRandomID()
+    {
+        var text = "";
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        for( var i=0; i < 7; i++ )
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        return text;
+    }
 
 }
 

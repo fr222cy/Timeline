@@ -13,3 +13,8 @@
 	font-size: inherit;
 }
 
+body{
+  color: white;
+  background-image: url("../images/background.jpg");
+}
+

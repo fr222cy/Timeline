@@ -11,26 +11,22 @@
 	
 </head>
 <body>
- <nav class="green lighten-1" role="navigation">
+	 <nav class="green lighten-1" role="navigation">
     <div class="nav-wrapper container">
       <a id="logo-container" href="#" class="brand-logo">SocketPoker</a>
-      <div class="nav-wrapper right">
-      <ul class="right ">
-        <li><p><%= user.facebook.name %> </p> </li>
-        <li> <a href="/logout" class="btn btn-default btn-sm">Logout</a>  </li>
-      </ul>
-    </div>
-     
     </div>
   </nav>
-    <div class="section no-pad-bot" id="index-banner">
-     <div class="container">
-        <br><br>
-        <h1 class="header center ">Lobby</h1>
-     </div>
-    </div>    
-        <h5 class="center">Press search to do a matchmaking!</h5>
-        <p class="center"><a href="/queue" class="btn btn-primary"><span class="fa fa"></span> Search for game</a></p>
+ 
+    <div class="container" id="container">
+      <br><br>
+      <h1 class="header center green-text">Play now!</h1>
+      <div class="row center">
 
+		<div id="fb-root"></div>
+		<a href="/auth/facebook" class="btn btn-primary"><span class="fa fa-facebook"></span> Login with Facebook</a>
+		
+    </div>
+      <h5 class="center">Users Online: 0</h5>
+    </div>
 </body>
 </html>

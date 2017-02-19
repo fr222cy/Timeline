@@ -1,7 +1,8 @@
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var io = require('socket.io')(http, {'pingInterval': 2000, 'pingTimeout': 5000});
+
 var port = process.env.PORT || 8080;
 var morgan = require('morgan');
 var cookieParser = require('cookie-parser');
@@ -23,7 +24,7 @@ app.use(session({secret: "secretString",
                  saveUninitialized: true,
                  resave: true}));
 
-app.use(passport.initialize())
+app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 

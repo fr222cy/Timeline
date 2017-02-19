@@ -86,9 +86,6 @@ module.exports = function(passport){
                     newUser.facebook.email = profile.emails[0].value;
                     newUser.facebook.username = profile.username;
                     newUser.facebook.profilePictureURL = //graph.facebook.com/"newUser.facebook.id"/picture";
-                 
-                    
-                   
 
                     newUser.save(function(err){
                         if(err)

@@ -15,7 +15,11 @@ module.exports = function(app, passport, io){
 
     app.get('/lobby', isLoggedIn, function(req, res){
         res.render('lobby.ejs', {user: req.user});
-        
+    });
+
+    app.get('/game/:gameid', isLoggedIn, function(req, res){
+        console.log(req.params.gameid);
+        res.render('pokerRoom.ejs', {user: req.user});
     });
 
     app.get('/queue', isLoggedIn, function(req, res){
