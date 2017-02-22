@@ -31,8 +31,10 @@ app.use(flash());
 app.set('view engine', 'ejs');
 
     
-require('./app/routes.js')(app, passport);
-require('./app/queue.js')(app,io);
+require('./app/routes.js')(app, passport, io);
+
+
+
 
 http.listen(port, function(){
   console.log("server on!");

@@ -1,8 +1,18 @@
 var User = require('./model/user.js');
 
-module.exports = function(app, passport, io){
+var PokerGameHandler = require('./game.js');
 
-   
+
+module.exports = function(app, passport, io){
+var pokerGameHandler = new PokerGameHandler();
+pokerGameHandler.running(app, io);
+
+
+    var createGame = function(gameId, players){     
+        pokerGameHandler.newGame(gameId, players);
+    }
+
+    require('./queue.js')(app, io, createGame);
 
     app.get('/', function (req, res){
         res.render('index.ejs');
@@ -18,23 +28,21 @@ module.exports = function(app, passport, io){
     });
 
     app.get('/game/:gameid', isLoggedIn, function(req, res){
-        console.log(req.params.gameid);
         res.render('pokerRoom.ejs', {user: req.user});
     });
 
     app.get('/queue', isLoggedIn, function(req, res){
+        
         res.render('queue.ejs', {user: req.user});    
     });
-
 
     app.get('/auth/facebook', passport.authenticate('facebook', {scope:['email']}));
 
     app.get('/auth/facebook/callback',
-    passport.authenticate('facebook', { failureRedirect: '/' }),
-    function(req, res) {
-    // Successful authentication, redirect home.
-    res.redirect('/lobby');
-    
+        passport.authenticate('facebook', { failureRedirect: '/' }),
+        function(req, res) {
+        // Successful authentication, redirect home.
+        res.redirect('/lobby');
     });
 
 
@@ -60,6 +68,8 @@ module.exports = function(app, passport, io){
     }));
 
 };
+
+
 
 function isLoggedIn(req, res, next){
     if(req.isAuthenticated()){

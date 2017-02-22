@@ -1,4 +1,4 @@
-module.exports = function(app, io){
+module.exports = function(app, io, callback){
 
     var queueHandler = require("./model/queueHandler.js");
     var qh = new queueHandler();
@@ -12,14 +12,17 @@ module.exports = function(app, io){
                 user.customId = data.customId;
                 user.name = data.name;
                 user.socketId = socket.id;
-                qh.addUser(user);
-
-                if(qh.getAmountOfUsers() >= qh.getMaxPlayers()){
-                    qh.clear();
-                    redirectToNewGame();
-                }
+                qh.addUser(user);    
+                notify();
+            }else{
+                qh.updateUser(data.customId, socket.id);
+                notify();
             }
-            notify();
+
+            if(qh.getAmountOfUsers() >= qh.getMaxPlayers()){
+                startNewGame();
+            }
+          
         });
 
         socket.on('disconnect', function(){
@@ -28,10 +31,13 @@ module.exports = function(app, io){
             notify();
         });
 
-        function redirectToNewGame(){
-        
-            var urlString = "/game/"+generateRandomID();
+        function startNewGame(){
+            var randomId = generateRandomID();
+            callback(randomId, qh.getClients());
+            var urlString = "/game/"+randomId;
             io.emit("gameReady", {url: urlString} );
+            notify();
+            qh.clear();
         }
 
         function notify(){
@@ -73,7 +79,6 @@ module.exports = function(app, io){
 
         return text;
     }
-
 }
 
   

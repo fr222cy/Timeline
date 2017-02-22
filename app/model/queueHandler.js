@@ -2,7 +2,7 @@ const util = require('util');
 
     function QueueHandler() {
         this.clients = [];
-        this.maxClients = 3;
+        this.maxClients = 1;
     }
 
     QueueHandler.prototype.addUser = function(object) {
@@ -10,12 +10,10 @@ const util = require('util');
     };
 
     QueueHandler.prototype.removeUser = function(socketId) {
-        console.log("Username on index 0: " + this.clients[0].name);
-        console.log("Username on index 1: " + this.clients[1].name);
-        console.log("Ska ta bort "+this.getUser(socketId).name+" på index "+this.clients.indexOf(this.getUser(socketId)));
-        //var deleted = this.clients.splice());  Fixa 
-        console.log("Tog bort: " +  deleted);  
-        console.log(util.inspect(deleted, {showHidden: false, depth: null}));
+        var index = this.clients.indexOf(this.getUser(socketId));
+    
+        if(index > -1)
+            this.clients.splice(index, 1);   
     };
 
     QueueHandler.prototype.clear = function(){
@@ -32,11 +30,18 @@ const util = require('util');
         return userToreturn;
     };
 
+    QueueHandler.prototype.updateUser = function(customId, newSocketId){
+        this.clients.forEach(function(user) {
+        if(user.customId === customId)
+           user.socketId = newSocketId;
+        });
+   
+    }
+
     QueueHandler.prototype.pop = function() {   
         if(this.clients.length > 0){
             return this.clients.pop(); 
         }   
-        
     };
 
     QueueHandler.prototype.getAllUsersInQueue = function() {
