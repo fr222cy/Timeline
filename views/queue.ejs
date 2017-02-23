@@ -1,31 +1,12 @@
 <!doctype html>
 <html>
-<head>
-	<title>SocketPoker</title>
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  	<link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-	<link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-	
-	
-</head>
+<% include header %>
 <body>
- <nav class="green lighten-1" role="navigation">
-    <div class="nav-wrapper container">
-      <a id="logo-container" href="#" class="brand-logo">SocketPoker</a>
-      <div class="nav-wrapper right">
-      <ul class="right ">
-        <li><p><%= user.facebook.name %> </p> </li>
-        <li> <a href="/logout" class="btn btn-default btn-sm">Logout</a>  </li>
-      </ul>
-    </div>
+  <% include navbar %>
 
-    </div>
-  </nav>
    
      <div class="center container">
-        <span class="center"><img class="center" src="images/loading.gif"/></span>
+        <span class="center"><img class="center" src="public/images/loading.gif"/></span>
         <p id="leaveQueueButton" class="center"><a href="/lobby" class="btn"><span class="fa fa"></span> Leave Queue</a></p>
         <h3 id="peopleLeft"></h3>
         <h5 id="inqueue"></h5>
@@ -50,11 +31,16 @@
       });  
 
       socket.on('gameReady', function(data){
+          redirect(data);
+      });   
+
+
+      function redirect(data){
         document.getElementById("peopleLeft").innerHTML = "All here!starting in 5 seconds";
         document.getElementById("leaveQueueButton").hidden = true;
         var i = 5;
 
-        var myinterval = setInterval(function() {
+        setInterval(function() {
         document.getElementById("inqueue").innerHTML = "Quitting now gives a temporary ban";
         document.getElementById("peopleLeft").innerHTML = "All here! starting in "+i+" seconds";
         
@@ -67,13 +53,12 @@
             i--;
         }
         }, 1000);
-         
-       
-      });   
+      }
     </script>
   
 
  
 
 </body>
+ <% include footer %>
 </html>

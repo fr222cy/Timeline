@@ -1,21 +1,21 @@
 var User = require('./model/user.js');
 
-var PokerGameHandler = require('./game.js');
+var GameHandler = require('./game.js');
+var gameHandler = new GameHandler();
 
 
 module.exports = function(app, passport, io){
-var pokerGameHandler = new PokerGameHandler();
-pokerGameHandler.running(app, io);
+gameHandler.running(app, io);
 
 
     var createGame = function(gameId, players){     
-        pokerGameHandler.newGame(gameId, players);
+        gameHandler.newGame(gameId, players);
     }
 
     require('./queue.js')(app, io, createGame);
 
     app.get('/', function (req, res){
-        res.render('index.ejs');
+        res.render('index.ejs', {amountOfPlayers: gameHandler.getAmountOfPlayers()});
     });
 
     app.get('/logout', function(req, res){
@@ -28,7 +28,11 @@ pokerGameHandler.running(app, io);
     });
 
     app.get('/game/:gameid', isLoggedIn, function(req, res){
-        res.render('pokerRoom.ejs', {user: req.user});
+        if(isInGame(req.user.facebook.id, req.params.gameid)){
+            res.render('gameRoom.ejs', {user: req.user});
+        }else{
+            res.redirect('/lobby')
+        }
     });
 
     app.get('/queue', isLoggedIn, function(req, res){
@@ -75,6 +79,16 @@ function isLoggedIn(req, res, next){
     if(req.isAuthenticated()){
         return next();
     }
-
     res.redirect('/');
+}
+
+function isInGame(userId, roomId){
+    console.log("UserID:"+ userId);
+    console.log("RoomID:"+ roomId);
+    if(userId != null){
+         if(gameHandler.isAuthorized(userId, roomId)){
+             return true;
+         }
+    }
+    return false;
 }

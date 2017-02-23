@@ -16,7 +16,7 @@ var flash = require('connect-flash');
 var configDB = require('./config/database.js');
 mongoose.connect(configDB.url);
 require('./config/passport')(passport);
-app.use(express.static(__dirname + '/public'));
+app.use('/public', express.static('public'));
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));

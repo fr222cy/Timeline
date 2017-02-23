@@ -59,8 +59,7 @@ module.exports = function(app, io, callback){
         var clients = qh.getClients();
         if(clients == null)
             return false;
-        
-        
+
         clients.forEach(function(element) {
             if(element.customId == customId)
                 result = true;      

@@ -11,7 +11,6 @@ const util = require('util');
 
     QueueHandler.prototype.removeUser = function(socketId) {
         var index = this.clients.indexOf(this.getUser(socketId));
-    
         if(index > -1)
             this.clients.splice(index, 1);   
     };
@@ -35,7 +34,6 @@ const util = require('util');
         if(user.customId === customId)
            user.socketId = newSocketId;
         });
-   
     }
 
     QueueHandler.prototype.pop = function() {   
@@ -67,4 +65,5 @@ const util = require('util');
     QueueHandler.prototype.getClients = function() {
         return this.clients;
     }
+    
 module.exports = QueueHandler;

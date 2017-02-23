@@ -1,50 +1,57 @@
 var Game = function(){}
-var PokerRoom = require('./model/pokerRoom.js');
-var pokerRooms = [];
-
+var gameRoom = require('./model/gameRoom.js');
+var rooms = [];
+var players = 0;
 
 Game.prototype.running = function(app, io){
     var that = this;
+    this.io = io;
     io.on('connection', function(socket){   
-
-        socket.on('initialize', function(data){
-            if(that.isAuthorized(socket, data.customId, data.roomId)){
-                socket.join(data.roomId, function(){
-                    console.log(socket.rooms); // [ <socket.id>, 'room 237' ]
-                    io.to(data.roomId, 'a new user has joined the room'); // broadcast to everyone in the room
-                });
-                console.log("Was Authorized");
-            }else{
-                console.log("Was NOT Authorized");
-                //socket.disconnect();
-            }
+        
+        socket.on('initialize', function(data){   
+            players++;        
+            socket.join(data.roomId, function(){
+                that.getRoomById(data.roomId).addActivePlayer(data.customId);
+            });        
         });
-
+      
         socket.on('disconnect', function(){
+            players--;
             console.log("Socket to be removed: "+ socket.id);
         });
     });
 }
 
 Game.prototype.newGame = function(roomId, players){
-    pokerRooms.push(new PokerRoom(roomId, players));
+    rooms.push(new gameRoom(roomId, players, this.io));
 }
     
-Game.prototype.isAuthorized = function(socket, customId, roomId){
-    console.log("ROOMID on server:" + roomId);
-    var room = pokerRooms.filter(function( obj ) {
-        return obj.getGameId() === roomId;
-    })[0];
-    console.log("ROOM on server:" + room);
-    var players = room.getPlayers();
+Game.prototype.isAuthorized = function(customId, roomId){
     var result = false;
-
-    players.forEach(function(player){
-        if(player.customId === customId){
-            result = true;
+    if(roomId != null && customId != null){
+        var room = this.getRoomById(roomId);
+        if(room != null){
+            var players = room.getRegisteredPlayers();
+            players.forEach(function(player){
+                console.log(player.customId);
+                if(player.customId == customId){
+                    result = true;
+                }
+            });
+        return result;
         }
-    });
-    return result;
+    }
+    io.emit("disconnectUser", { message: "Something went wrong"}); 
+}
+
+Game.prototype.getRoomById = function(roomId){
+     return rooms.filter(function( obj ) {
+        return obj.getRoomId() === roomId;
+    })[0];
+}
+
+Game.prototype.getAmountOfPlayers = function(){
+    return players;
 }
 
 
@@ -52,11 +59,3 @@ Game.prototype.isAuthorized = function(socket, customId, roomId){
 module.exports = Game;
 
 
-
-
-
-
-
-
-
-    

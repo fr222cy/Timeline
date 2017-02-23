@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<% include header %>
+<body>
+	 <% include navbar %>	
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+ <% var name = user.facebook.name; %>
+<% var id = user.facebook.id; %>
+     
+
+
+
+
+
+
+
+      <script>
+          var socket = io();
+          var roomId = document.location.href.substr(document.location.href.lastIndexOf('/') + 1);
+          var name = "<%= name %>";
+          var id = "<%= id %>";
+
+          socket.on('connect', function (data) {
+            socket.emit('initialize', { customId: id, roomId : roomId});
+          });
+
+          socket.on(roomId, function(data){
+            console.log(data.message);
+          });
+
+          socket.on('disconnectUser', function(){
+            window.location.href = "/";
+          });
+      </script>
+    <% include footer %>
+</body>
+</html>

@@ -1,28 +1,8 @@
 <!doctype html>
 <html>
-<head>
-	<title>SocketPoker</title>
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  	<link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-	<link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-	
-	
-</head>
+<% include header %>
 <body>
- <nav class="green lighten-1" role="navigation">
-    <div class="nav-wrapper container">
-      <a id="logo-container" href="#" class="brand-logo">SocketPoker</a>
-      <div class="nav-wrapper right">
-      <ul class="right ">
-        <li><p><%= user.facebook.name %> </p> </li>
-        <li> <a href="/logout" class="btn btn-default btn-sm">Logout</a>  </li>
-      </ul>
-    </div>
-     
-    </div>
-  </nav>
+<% include navbar %>
     <div class="section no-pad-bot" id="index-banner">
      <div class="container">
         <br><br>
@@ -33,4 +13,5 @@
         <p class="center"><a href="/queue" class="btn btn-primary"><span class="fa fa"></span> Search for game</a></p>
 
 </body>
+ <% include footer %>
 </html>
