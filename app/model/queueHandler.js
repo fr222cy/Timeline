@@ -2,7 +2,7 @@ const util = require('util');
 
     function QueueHandler() {
         this.clients = [];
-        this.maxClients = 1;
+        this.maxClients = 2;
     }
 
     QueueHandler.prototype.addUser = function(object) {

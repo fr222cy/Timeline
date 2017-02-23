@@ -9,7 +9,9 @@
 <% var id = user.facebook.id; %>
      
 
-
+<h3 id="round">placeholder</h3> 
+<h4 id="turn">placeholder</h4>
+<h5 id="gametime">placeholder</h5>
 
 
 
@@ -26,7 +28,10 @@
           });
 
           socket.on(roomId, function(data){
-            console.log(data.message);
+            console.log(data);
+             document.getElementById("round").innerHTML = "Round "+data.round;
+             document.getElementById("turn").innerHTML = "Its "+data.turn+ " Turn!";
+             document.getElementById("gametime").innerHTML = "Gametime:"+ data.gameTime;
           });
 
           socket.on('disconnectUser', function(){

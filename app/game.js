@@ -7,11 +7,11 @@ Game.prototype.running = function(app, io){
     var that = this;
     this.io = io;
     io.on('connection', function(socket){   
-        
+        players++;   
         socket.on('initialize', function(data){   
-            players++;        
+                 
             socket.join(data.roomId, function(){
-                that.getRoomById(data.roomId).addActivePlayer(data.customId);
+                that.getRoomById(data.roomId).addActivePlayer(socket);
             });        
         });
       

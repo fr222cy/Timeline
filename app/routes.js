@@ -13,7 +13,7 @@ gameHandler.running(app, io);
     }
 
     require('./queue.js')(app, io, createGame);
-
+    console.log(gameHandler.getAmountOfPlayers())
     app.get('/', function (req, res){
         res.render('index.ejs', {amountOfPlayers: gameHandler.getAmountOfPlayers()});
     });
