@@ -1,25 +1,27 @@
+var Player = require('./model/Player.js');
+
 module.exports = function(app, io, callback){
 
-    var queueHandler = require("./model/queueHandler.js");
-    var qh = new queueHandler();
+    var Queue = require("./model/queue.js");
+    var queue = new Queue();
     var gameStarting = false;
 
     io.on('connection', function(socket){   
         
         socket.on('storeClientInfo', function (data) {
-            if(!isUserAlreadyInQueue(data.customId)){
-                var user = new Object();
-                user.customId = data.customId;
-                user.name = data.name;
-                user.socketId = socket.id;
-                qh.addUser(user);    
+            if(!isPlayerAlreadyInQueue(data.userId)){
+                var newPlayer = new Player(data.userId,
+                                      socket.id,
+                                      data.name);
+
+                queue.addPlayer(newPlayer);    
                 notify();
             }else{
-                qh.updateUser(data.customId, socket.id);
+                queue.updatePlayer(data.userId, socket.id);
                 notify();
             }
 
-            if(qh.getAmountOfUsers() >= qh.getMaxPlayers()){
+            if(queue.getAmountOfPlayers() >= queue.getMaxPlayers()){
                 startNewGame();
             }
           
@@ -27,41 +29,41 @@ module.exports = function(app, io, callback){
 
         socket.on('disconnect', function(){
             console.log("Socket to be removed: "+ socket.id);
-            qh.removeUser(socket.id); 
+            queue.removePlayer(socket.id); 
             notify();
         });
 
         function startNewGame(){
             var randomId = generateRandomID();
-            callback(randomId, qh.getClients());
+            callback(randomId, queue.getClients());
             var urlString = "/game/"+randomId;
             io.emit("gameReady", {url: urlString} );
             notify();
-            qh.clear();
+            queue.clear();
         }
 
         function notify(){
-            userInQueueString = "Players in queue: ";
-            qh.getAllUsersInQueue().forEach(function(element, index , arr){
-                userInQueueString += "<br>" + element;
+            playerInQueueString = "Players in queue: ";
+            queue.getAllPlayersInQueue().forEach(function(element, index , arr){
+                playerInQueueString += "<br>" + element;
             });
            
             io.emit("queue",{ 
-            inQueue: userInQueueString,
-            totalInQueue: qh.getAmountOfUsers(),
-            maxPlayers: qh.getMaxPlayers()
+            inQueue: playerInQueueString,
+            totalInQueue: queue.getAmountOfPlayers(),
+            maxPlayers: queue.getMaxPlayers()
             });
         }
     });
 
-    function isUserAlreadyInQueue(customId) {
+    function isPlayerAlreadyInQueue(userId) {
         var result = false;
-        var clients = qh.getClients();
+        var clients = queue.getClients();
         if(clients == null)
             return false;
 
         clients.forEach(function(element) {
-            if(element.customId == customId)
+            if(element.userId == userId)
                 result = true;      
         });
     

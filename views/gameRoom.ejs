@@ -13,10 +13,6 @@
 <h4 id="turn">placeholder</h4>
 <h5 id="gametime">placeholder</h5>
 
-
-
-
-
       <script>
           var socket = io();
           var roomId = document.location.href.substr(document.location.href.lastIndexOf('/') + 1);
@@ -24,7 +20,7 @@
           var id = "<%= id %>";
 
           socket.on('connect', function (data) {
-            socket.emit('initialize', { customId: id, roomId : roomId});
+            socket.emit('initialize', { userId: id, roomId : roomId});
           });
 
           socket.on(roomId, function(data){

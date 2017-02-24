@@ -11,7 +11,7 @@ Game.prototype.running = function(app, io){
         socket.on('initialize', function(data){   
                  
             socket.join(data.roomId, function(){
-                that.getRoomById(data.roomId).addActivePlayer(socket);
+                that.getRoomById(data.roomId).addActivePlayer(socket, data.userId);
             });        
         });
       
@@ -26,15 +26,15 @@ Game.prototype.newGame = function(roomId, players){
     rooms.push(new gameRoom(roomId, players, this.io));
 }
     
-Game.prototype.isAuthorized = function(customId, roomId){
+Game.prototype.isAuthorized = function(userId, roomId){
     var result = false;
-    if(roomId != null && customId != null){
+    if(roomId != null && userId != null){
         var room = this.getRoomById(roomId);
         if(room != null){
             var players = room.getRegisteredPlayers();
             players.forEach(function(player){
-                console.log(player.customId);
-                if(player.customId == customId){
+                console.log(player.userId);
+                if(player.userId == userId){
                     result = true;
                 }
             });

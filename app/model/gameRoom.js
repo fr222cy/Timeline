@@ -26,9 +26,9 @@ GameRoom.prototype.getRegisteredPlayers = function(){
     return this.players;
 }
 
-GameRoom.prototype.addActivePlayer = function(socket){
+GameRoom.prototype.addActivePlayer = function(socket, userId){
     this.activeSockets.push(socket);
-
+    
     if(this.activeSockets.length >= this.players.length){
         this.startGame();
     }
@@ -45,16 +45,16 @@ GameRoom.prototype.startGame = function(){
     }, this.refreshTime);
 }
 
-
-
-
-
 GameRoom.prototype.sendGameData = function(){
     this.io.emit(this.roomId,{
         round: this.round,
         turn : "Filip",
         gameTime : this.gameTime
         });
+}
+
+GameRoom.prototype.updateUser = function(){
+
 }
 
 module.exports = GameRoom;

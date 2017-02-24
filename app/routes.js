@@ -1,6 +1,6 @@
 var User = require('./model/user.js');
 
-var GameHandler = require('./game.js');
+var GameHandler = require('./gameHandler.js');
 var gameHandler = new GameHandler();
 
 
@@ -12,7 +12,7 @@ gameHandler.running(app, io);
         gameHandler.newGame(gameId, players);
     }
 
-    require('./queue.js')(app, io, createGame);
+    require('./queueHandler.js')(app, io, createGame);
     console.log(gameHandler.getAmountOfPlayers())
     app.get('/', function (req, res){
         res.render('index.ejs', {amountOfPlayers: gameHandler.getAmountOfPlayers()});

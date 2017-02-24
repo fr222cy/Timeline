@@ -22,7 +22,7 @@
       var id = "<%= id %>";
       var users;
       socket.on('connect', function (data) {
-        socket.emit('storeClientInfo', { customId: id, name: name });
+        socket.emit('storeClientInfo', { userId: id, name: name });
       });
 
       socket.on('queue', function(data){
@@ -44,7 +44,6 @@
         document.getElementById("inqueue").innerHTML = "Quitting now gives a temporary ban";
         document.getElementById("peopleLeft").innerHTML = "All here! starting in "+i+" seconds";
         
-
         if (i === 0) {
             window.location.href = data.url
             clearInterval(myInterval);
