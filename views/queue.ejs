@@ -9,7 +9,9 @@
         <span class="center"><img class="center" src="public/images/loading.gif"/></span>
         <p id="leaveQueueButton" class="center"><a href="/lobby" class="btn"><span class="fa fa"></span> Leave Queue</a></p>
         <h3 id="peopleLeft"></h3>
+        <h5 id="info">People Here</h5>
         <h5 id="inqueue"></h5>
+        
         </div>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -36,14 +38,16 @@
 
 
       function redirect(data){
-        document.getElementById("peopleLeft").innerHTML = "All here!starting in 5 seconds";
+        document.getElementById("peopleLeft").innerHTML = "All here! starting in 5 seconds";
+        document.getElementById("info").innerHTML = "Quitting now gives a temporary ban";
+        document.getElementById("inqueue").innerHTML = data.players;
         document.getElementById("leaveQueueButton").hidden = true;
+
         var i = 5;
 
         setInterval(function() {
-        document.getElementById("inqueue").innerHTML = "Quitting now gives a temporary ban";
         document.getElementById("peopleLeft").innerHTML = "All here! starting in "+i+" seconds";
-        
+
         if (i === 0) {
             window.location.href = data.url
             clearInterval(myInterval);

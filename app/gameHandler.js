@@ -11,8 +11,12 @@ Game.prototype.running = function(app, io){
         socket.on('initialize', function(data){   
                  
             socket.join(data.roomId, function(){
-                that.getRoomById(data.roomId).addActivePlayer(socket, data.userId);
+                that.getRoomById(data.roomId).updateSocket();
             });        
+        });
+
+        socket.on('nextTurn', function(data){   
+             that.getRoomById(data.roomId).nextTurn()
         });
       
         socket.on('disconnect', function(){

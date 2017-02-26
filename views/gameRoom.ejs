@@ -12,21 +12,36 @@
 <h3 id="round">placeholder</h3> 
 <h4 id="turn">placeholder</h4>
 <h5 id="gametime">placeholder</h5>
+<button id="nextTurnButton">Next Turn!</button>
 
       <script>
           var socket = io();
           var roomId = document.location.href.substr(document.location.href.lastIndexOf('/') + 1);
           var name = "<%= name %>";
           var id = "<%= id %>";
+          var nextTurnButton = document.getElementById("nextTurnButton");
+          nextTurnButton.hidden = true;
 
           socket.on('connect', function (data) {
             socket.emit('initialize', { userId: id, roomId : roomId});
           });
 
+      
+
           socket.on(roomId, function(data){
             console.log(data);
+            console.log(id);
+            if(id == data.turn.userId){
+            nextTurnButton.hidden = false;
+                nextTurnButton.onclick = function(){
+                    socket.emit('nextTurn', { nextTurn : 1, roomId : roomId})
+                    nextTurnButton.hidden = true;
+                };
+            
+            }
+
              document.getElementById("round").innerHTML = "Round "+data.round;
-             document.getElementById("turn").innerHTML = "Its "+data.turn+ " Turn!";
+             document.getElementById("turn").innerHTML = "Its "+data.turn.name+ "s Turn!";
              document.getElementById("gametime").innerHTML = "Gametime:"+ data.gameTime;
           });
 

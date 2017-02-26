@@ -4,7 +4,7 @@ module.exports = function(app, io, callback){
 
     var Queue = require("./model/queue.js");
     var queue = new Queue();
-    var gameStarting = false;
+
 
     io.on('connection', function(socket){   
         
@@ -33,23 +33,18 @@ module.exports = function(app, io, callback){
             notify();
         });
 
-        function startNewGame(){
-            var randomId = generateRandomID();
-            callback(randomId, queue.getClients());
-            var urlString = "/game/"+randomId;
-            io.emit("gameReady", {url: urlString} );
-            notify();
-            queue.clear();
+        function startNewGame(){          
+                var randomId = generateRandomID();
+                callback(randomId, queue.getClients());
+                var urlString = "/game/"+randomId;
+                io.emit("gameReady", {url: urlString, players: getPlayersInQueueHTML()} );
+                queue.clear();
+                socket.disconnect();
         }
 
         function notify(){
-            playerInQueueString = "Players in queue: ";
-            queue.getAllPlayersInQueue().forEach(function(element, index , arr){
-                playerInQueueString += "<br>" + element;
-            });
-           
             io.emit("queue",{ 
-            inQueue: playerInQueueString,
+            inQueue: getPlayersInQueueHTML(),
             totalInQueue: queue.getAmountOfPlayers(),
             maxPlayers: queue.getMaxPlayers()
             });
@@ -79,6 +74,14 @@ module.exports = function(app, io, callback){
             text += possible.charAt(Math.floor(Math.random() * possible.length));
 
         return text;
+    }
+
+    function getPlayersInQueueHTML(){
+        var playerInQueueString = "";
+        queue.getAllPlayersInQueue().forEach(function(element, index , arr){
+                playerInQueueString += "<br>" + element;
+        });
+        return playerInQueueString;
     }
 }
 

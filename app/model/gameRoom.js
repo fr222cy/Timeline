@@ -1,7 +1,6 @@
 function GameRoom(roomId, players, io){
     this.roomId = roomId;
     this.players = players;
-    this.activeSockets = [];
     this.io = io;
     this.gameStates = {
         Waiting: 0,
@@ -13,7 +12,8 @@ function GameRoom(roomId, players, io){
     this.maxTurns = 100;
     this.round = 1;
     this.turn = 0;
-    this.refreshTime = 3000;
+    this.refreshTime = 1000;
+    this.startGame();
 }
 
 
@@ -26,35 +26,42 @@ GameRoom.prototype.getRegisteredPlayers = function(){
     return this.players;
 }
 
-GameRoom.prototype.addActivePlayer = function(socket, userId){
-    this.activeSockets.push(socket);
-    
-    if(this.activeSockets.length >= this.players.length){
-        this.startGame();
-    }
-}
-
 GameRoom.prototype.startGame = function(){
     var that = this;
     console.log("STARTED GAME: " + this.roomId);
+
     setInterval(function(){   
         that.sendGameData();
-        
-        
-        that.gameTime+=(this.refreshTime/1000);
+        that.gameTime+=that.refreshTime/1000;
     }, this.refreshTime);
 }
 
 GameRoom.prototype.sendGameData = function(){
     this.io.emit(this.roomId,{
         round: this.round,
-        turn : "Filip",
+        turn : this.players[this.turn],
         gameTime : this.gameTime
         });
 }
 
-GameRoom.prototype.updateUser = function(){
+GameRoom.prototype.updateSocket = function(socket, userId){
+    this.players.forEach(function(player){
+        if(player.userId === userId){
+            player.socket = socket;
+        }
+    });
+}
 
+GameRoom.prototype.nextTurn = function(){
+  
+    if(this.turn + 1 > this.players.length - 1){
+          console.log("SET TO 0");
+        this.turn = 0;
+    }else{
+        console.log("SET TO " + this.turn);
+        this.turn++;
+    }
+    
 }
 
 module.exports = GameRoom;
