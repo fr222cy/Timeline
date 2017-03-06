@@ -8,41 +8,44 @@
  <% var name = user.facebook.name; %>
 <% var id = user.facebook.id; %>
      
-
-<h3 id="round">placeholder</h3> 
-<h4 id="turn">placeholder</h4>
-<h5 id="gametime">placeholder</h5>
-<button id="nextTurnButton">Next Turn!</button>
+<h3 id="gameId"></h3>
+<h3 id="round"></h3>
+<h4 id="turn"></h4>
+<h5 id="timeLeft"></h5>
+<button id="nextTurnButton">Lock!</button>
 
       <script>
           var socket = io();
-          var roomId = document.location.href.substr(document.location.href.lastIndexOf('/') + 1);
+          var roomId;
           var name = "<%= name %>";
           var id = "<%= id %>";
           var nextTurnButton = document.getElementById("nextTurnButton");
+          var roundText = document.getElementById("round");
+          var turnText = document.getElementById("turn");
+          var timeLeftText = document.getElementById("timeLeft");
           nextTurnButton.hidden = true;
 
           socket.on('connect', function (data) {
             socket.emit('initialize', { userId: id, roomId : roomId});
           });
 
-      
-
           socket.on(roomId, function(data){
             console.log(data);
             console.log(id);
             if(id == data.turn.userId){
-            nextTurnButton.hidden = false;
+                turnText.innerHTML = "Its your turn!";
+                nextTurnButton.hidden = false;
+
                 nextTurnButton.onclick = function(){
                     socket.emit('nextTurn', { nextTurn : 1, roomId : roomId})
                     nextTurnButton.hidden = true;
                 };
-            
+            }else{
+                turnText.innerHTML = "Its "+data.turn.name+ "s Turn!";
             }
 
-             document.getElementById("round").innerHTML = "Round "+data.round;
-             document.getElementById("turn").innerHTML = "Its "+data.turn.name+ "s Turn!";
-             document.getElementById("gametime").innerHTML = "Gametime:"+ data.gameTime;
+             roundText.innerHTML = "Round "+data.round;
+             gameTimeText.getElementById("gametime").innerHTML = "Gametime:"+ data.gameTime;
           });
 
           socket.on('disconnectUser', function(){

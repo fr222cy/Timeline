@@ -1,7 +1,7 @@
 {
-  "name": "socket-poker",
+  "name": "timeline-online",
   "version": "1.0.0",
-  "description": "Texas holdem client and server",
+  "description": "Client and server for a timeline multiplayer game",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

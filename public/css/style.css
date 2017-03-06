@@ -12,6 +12,7 @@ html{
 
 
 
+
 .icon-block {
   padding: 0 15px;
 }
@@ -28,8 +29,93 @@ body{
 footer{
   position:absolute;
   bottom: 0;
+  right:0;
+  margin-right: 2px;
   text-align: center;
 }
+
+/* Game section */
+
+#gameArea{
+  position: absolute;
+  top:6.5%;
+  bottom:0;
+  width:100%;
+  overflow: hidden;
+}
+
+#gameInfo {
+  top:0;
+  margin-top:0px;
+  border-radius:5px;
+}
+
+#gameChat {
+  bottom:0;
+  position:absolute;
+  max-width:20%;
+  min-width:20%;
+  min-height:20%;
+  max-height:20%;
+}
+
+#gameChatArea {
+  background-color: white;
+  overflow-y: scroll;
+  position:absolute;
+  width:100%;
+  max-height: 75%;
+  min-height: 75%;
+}
+
+#gameChatInput{
+  bottom:0;
+  position:absolute;
+  left:0;
+  margin-bottom: 0;
+}
+
+.messages{
+  text-align: left;
+  color:black;
+  left:0;
+}
+
+.messages li{
+  border-bottom: 1px solid black;
+}
+
+#card {
+  width:10%;
+  height: 20%;
+  padding: 0.5em;
+  background: purple;
+}
+
+#timeLockArea{
+  position:absolute;
+  bottom:0;
+  min-width:80%;
+  max-width:80%;
+  margin-left:20%;
+  min-height:20%;
+  max-height:20%;
+  background-color:peru;
+}
+
+#timeLock{
+  min-width: 100%;
+  min-height: 100%;
+  bottom:0;
+  list-style: none;
+  margin: 0;
+  padding: 2%;
+}
+
+#timeLock >div{ 
+  float:left;
+}
+
 
 
 

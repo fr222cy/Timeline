@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<% include header %>
+<body>
+  <% include navbar %>
+
+        <div id="queueDiv" class="center">
+          <span class="center"><img class="center" src="public/images/loading.gif"/></span>
+          <p id="leaveQueueButton" class="center"><a href="/lobby" class="btn"><span class="fa fa"></span> Leave Queue</a></p>
+          <h3 id="peopleLeft"></h3>
+          <h5 id="info">In Matchmaking</h5>
+          <h5 id="inqueue"></h5>
+        </div>
+
+
+        <div hidden id="gameArea" class="center" >
+          <div id="gameInfo" class="green left">
+            <h5 id="roomId"></h5>
+            <h5 id="round"></h5> 
+            <h5 id="timeLeft"></h5>
+            <p id="turn"></p>            
+          </div>
+          <div id="gameChat" class="green left">
+            <div id="gameChatArea" >
+              <ul class="messages">
+              
+              </ul>
+            </div>
+            <input id="gameChatInput" type="text" placeholder="Type to chat!">
+          </div>
+          <h5 id="gametime"></h5>
+          
+          <div id="timeLockArea">
+            <ul id="timeLock">
+             
+            </ul>
+          </div>
+           
+          <a id="nextTurnButton" class="waves-effect green btn-large">Lock!</a>
+          <ul>
+           
+          </ul>
+        </div>
+          
+    
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>  
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>  
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/public/javascripts/gameScript.js"></script>
+    <div class='name' data-name-value='<%= user.facebook.name %>'></div>
+    <div class='id' data-id-value='<%= user.facebook.id %>'></div>
+  
+
+
+</body>
+ <% include footer %>
+</html>

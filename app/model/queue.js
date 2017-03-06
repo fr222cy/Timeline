@@ -1,8 +1,8 @@
 const util = require('util');
 
-    function Queue() {
+    var Queue = function() {
         this.clients = [];
-        this.maxClients = 2;
+        this.maxClients = 1;
     }
 
     Queue.prototype.addPlayer = function(object) {

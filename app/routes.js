@@ -1,21 +1,16 @@
 var User = require('./model/user.js');
 
-var GameHandler = require('./gameHandler.js');
-var gameHandler = new GameHandler();
+
 
 
 module.exports = function(app, passport, io){
-gameHandler.running(app, io);
 
 
-    var createGame = function(gameId, players){     
-        gameHandler.newGame(gameId, players);
-    }
 
-    require('./queueHandler.js')(app, io, createGame);
-    console.log(gameHandler.getAmountOfPlayers())
+    require('./gameHandler.js')(app, io);
+
     app.get('/', function (req, res){
-        res.render('index.ejs', {amountOfPlayers: gameHandler.getAmountOfPlayers()});
+        res.render('index.ejs', {amountOfPlayers: 0});
     });
 
     app.get('/logout', function(req, res){
@@ -27,17 +22,9 @@ gameHandler.running(app, io);
         res.render('lobby.ejs', {user: req.user});
     });
 
-    app.get('/game/:gameid', isLoggedIn, function(req, res){
-        if(isInGame(req.user.facebook.id, req.params.gameid)){
-            res.render('gameRoom.ejs', {user: req.user});
-        }else{
-            res.redirect('/lobby')
-        }
-    });
 
-    app.get('/queue', isLoggedIn, function(req, res){
-        
-        res.render('queue.ejs', {user: req.user});    
+    app.get('/game', isLoggedIn, function(req, res){
+       res.render('game.ejs', {user: req.user});    
     });
 
     app.get('/auth/facebook', passport.authenticate('facebook', {scope:['email']}));
@@ -70,10 +57,7 @@ gameHandler.running(app, io);
         failureRedirect: '/signup',
         failureFlash: true
     }));
-
 };
-
-
 
 function isLoggedIn(req, res, next){
     if(req.isAuthenticated()){
@@ -82,13 +66,4 @@ function isLoggedIn(req, res, next){
     res.redirect('/');
 }
 
-function isInGame(userId, roomId){
-    console.log("UserID:"+ userId);
-    console.log("RoomID:"+ roomId);
-    if(userId != null){
-         if(gameHandler.isAuthorized(userId, roomId)){
-             return true;
-         }
-    }
-    return false;
-}
+
