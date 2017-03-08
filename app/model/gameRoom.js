@@ -48,6 +48,9 @@ GameRoom.prototype.waitForPlayers = function(){
 
 GameRoom.prototype.newTurn = function(){
     var self = this;
+
+    //TODO: Handle first round specificly
+
     this.io.emit(this.roomId,{
         round: this.round,
         turn : this.players[this.turn],
@@ -88,8 +91,7 @@ GameRoom.prototype.sendMessage = function(data){
         time : hours+":"+minutes+":"+seconds,
         sender : data.sender.split(' ').slice(0, -1).join(' '),//removes lastname
         message : data.message
-    });
-    
+    });   
 }
 
 GameRoom.prototype.nextTurn = function(){

@@ -5,8 +5,6 @@ var User = require('./model/user.js');
 
 module.exports = function(app, passport, io){
 
-
-
     require('./gameHandler.js')(app, io);
 
     app.get('/', function (req, res){

@@ -33,17 +33,10 @@ console.log("SCRIPT IS RUNNING")
 function gameState(data){
     socket.off('queue');
     socket.off('gameReady');
+    $( "#timeLock2, #timeLock" ).sortable({
+      connectWith: ".connectedSortable"
+    }).disableSelection();
 
-
-    $( "#sortable" ).sortable({
-      revert: true
-    });
-
-    $( "#draggable" ).draggable({
-      connectToSortable: "#sortable",
-      revert: "invalid",
-      containment: "gameArea"
-    });
 
     $("#nextTurnButton").click(function() {
         console.log("Click");
@@ -66,7 +59,7 @@ function gameState(data){
         socket.emit('nextTurn', { nextTurn : 1, roomId : roomId})
     });
 
-    $("#peopleLeft").html("All here! starting in 2 seconds");
+    
     $("#info").html("Quitting now gives a temporary ban");
     $("#inqueue").html(data.players)
     $("#leaveQueueButton").hide(1000);
@@ -74,7 +67,7 @@ function gameState(data){
 }
       
 function countdown(){
-    var i = 5;
+    var i = 2;
     var myInterval = setInterval(function() {
         $("#peopleLeft").html("All here! starting in "+i+" seconds");
         if (i === 0) {    
@@ -120,4 +113,8 @@ function chat(){
         }
     });
 }
+
+
+    
+
 });
