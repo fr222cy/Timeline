@@ -2,7 +2,7 @@ const util = require('util');
 
     var Queue = function() {
         this.clients = [];
-        this.maxClients = 1;
+        this.maxClients = 2;
     }
 
     Queue.prototype.addPlayer = function(object) {

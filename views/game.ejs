@@ -28,34 +28,21 @@
             </div>
             <input id="gameChatInput" type="text" placeholder="Type to chat!">
           </div>
-          <h5 id="gametime"></h5>
-<a id="nextTurnButton" class="waves-effect green btn-large">Lock!</a>
-
-        
-
-          <ul id="timeLock2" class="connectedSortable">
-           
-                     <li><question-card id="card" class="ui-state-default">
-                      <card-year>1977</card-year>
-                      <card-description>
-                        Large-scale Bleeding Kansas violence begins with events leading to the 'Wakarusa War' between antislavery and proslavery forces.
-                      </card-description>
-                      <question-card></li>
-              
-          </ul>
-
-          
-          <div id="timeLockArea">
-            <ul id="timeLock" class="connectedSortable">               
-              <li>
-                <question-card id="card" class="ui-state-default">
-                      <card-year>2010</card-year>
-                      <card-description>
-                        Large-scale Bleeding Kansas violence begins with events leading to the 'Wakarusa War' between antislavery and proslavery forces.
-                      </card-description>
-                      <question-card>
-              </li>
-            </ul>
+          <h5 id="gametime"></h5>         
+          <div id="cardPile">
+            <div class="category" id="sports"><span>Sport and Misc</span> </div>
+            <div class="category" id="entertainment"><span>Entertainment</span> </div>
+            <div class="category" id="people"><span>Famous people and events</span> </div>
+            <div class="category" id="inventions"><span>Inventions</span> </div>
+          </div> 
+          <div id="cardGenerator"></div>
+          <div class="progress">
+            <div class="determinate" style="width: 100%"></div>
+          </div>
+          <div id="optionBar"> 
+              <a id="nextTurnButton" class="waves-effect green btn-large">Lock!</a>
+          </div>     
+          <div id="cardSlots">        
           </div>
            
           
@@ -65,6 +52,7 @@
     
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>  
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>  
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="/public/javascripts/gameScript.js"></script>
     <div class='name' data-name-value='<%= user.facebook.name %>'></div>

@@ -1,13 +1,10 @@
+var Card = require('./card.js');
+
 function GameRoom(roomId, players, io){
     this.roomId = roomId;
     this.players = players;
-    this.io = io;
-    this.gameStates = {
-        Waiting: 0,
-        Running: 1,
-        Stopped: 2 
-    }    
-    this.timeLimit = 30; //seconds
+    this.io = io; 
+    this.timeLimit = 90; //seconds
     this.round = 1;
     this.turn = 0;
     this.refreshTime = 1000;//ms
@@ -15,7 +12,10 @@ function GameRoom(roomId, players, io){
     this.turnTimer = null;
     this.report();
     this.waitForPlayers();
+    this.cardPile = [];
 }
+
+
 
 GameRoom.prototype.getRoomId = function(){
     return this.roomId;
@@ -48,14 +48,33 @@ GameRoom.prototype.waitForPlayers = function(){
 
 GameRoom.prototype.newTurn = function(){
     var self = this;
+    var timeleft = this.timeLimit
+    var card = this.getRandomCard();
 
     //TODO: Handle first round specificly
+    console.log(card);
 
-    this.io.emit(this.roomId,{
-        round: this.round,
-        turn : this.players[this.turn],
-        timelimit : this.timelimit
-    });
+     this.players.forEach(function(player){
+        //The player whos turn it is
+        if(self.players[self.turn] == player){
+            self.io.emit(self.roomId+"/"+player.userId,{
+                round: self.round,
+                player : self.players[self.turn],
+                time : timeleft,
+                card : card,
+                isPlayersTurn : true
+            });
+        }else{
+           self.io.emit(self.roomId+"/"+player.userId,{
+                round: self.round,
+                nameOfTurn : self.players[self.turn].name,
+                cards : self.players[self.turn].cards,
+                time : timeleft,
+                card : card,
+                isPlayersTurn : false
+            }); 
+        }   
+    }); 
 
     var timeleft = this.timeLimit
     this.turnTimer = setInterval(function() {
@@ -94,6 +113,19 @@ GameRoom.prototype.sendMessage = function(data){
     });   
 }
 
+GameRoom.prototype.sendCardMovement = function(data){
+    this.io.emit(this.roomId+"/cardMovement", {x: data.x, y: data.y})
+}
+
+GameRoom.prototype.validateDrop = function(data){
+    if(data.userId == this.players[this.turn].userId){
+        return true;
+    }else{
+        return false;
+    }
+
+};
+
 GameRoom.prototype.nextTurn = function(){
     clearInterval(this.turnTimer);
     if(this.turn + 1 > this.players.length - 1){
@@ -124,6 +156,24 @@ GameRoom.prototype.report = function(){
     console.log("|Players: "+this.players.length+"      |")
     console.log("|ROOMID:"+this.roomId+"  |");
     console.log("|----------------|");
+}
+
+GameRoom.prototype.getRandomCard = function(){
+    //If someone SOMEHOW see this particular commit
+    //Dont judge my historical knowledge! 
+    //This is just for testing.
+    this.cardPile.push(new Card("WW2 started", 1939, 1));
+    this.cardPile.push(new Card("New York was founded", 1634, 2));
+    this.cardPile.push(new Card("Aftonbladet was founded", 1871, 3));
+    this.cardPile.push(new Card("The world wide web was invented", 1991, 4));
+    this.cardPile.push(new Card("Neil Armstrong took the first step on the moon", 1968, 5));
+    this.cardPile.push(new Card("New Sweden was founded in Maryland", 1713, 6));
+    this.cardPile.push(new Card("Hitler Died", 1945, 7));
+    this.cardPile.push(new Card("Joseph stalin was born", 1889, 8));
+    this.cardPile.push(new Card("Swedish house mafia had a global hit with the song One", 1939, 9));
+
+    return this.cardPile[Math.floor(Math.random() * this.cardPile.length)];
+
 }
 
 module.exports = GameRoom;
