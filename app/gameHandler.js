@@ -1,10 +1,10 @@
 var Player = require('./model/Player.js');
-
+const util = require('util');
 module.exports = function(app, io){
 
-    var Queue = require("./model/queue.js");
+    var Queue = require("./queue.js");
     var queue = new Queue();
-    var GameRoom = require('./model/gameRoom.js');
+    var GameRoom = require('./gameRoom.js');
     var gameRooms = [];
     var players = 0;
     
@@ -18,9 +18,11 @@ module.exports = function(app, io){
         |---------------------|
         */
         socket.on('InitiliazeQueue', function (data) {
+
             if(!isPlayerAlreadyInQueue(data.userId)){
+               
                 var newPlayer = new Player(data.userId,
-                                      socket.id,
+                                      socket,
                                       data.name);
                 queue.addPlayer(newPlayer);    
                 notifyQueue();
@@ -33,37 +35,7 @@ module.exports = function(app, io){
                 startNewGame();
             }
         });
-        /*
-        |---------------------|
-        |--Player game Events-| 
-        |---------------------|
-        */
-        socket.on('joinRoom', function(data) {
-            socket.join(data.room);
-            console.log("socket joined room: " + data.room);
-            getRoomById(data.room).verifyPlayer(socket, data.userId);
-        });
-
-        socket.on('validateCardDrop', function(data, callback){
-            if(getRoomById(data.roomId).validateDrop(data)){
-                callback(true);
-            }else{
-                callback(false);
-            }
-        });
-
-        socket.on('nextTurn', function(data){   
-             getRoomById(data.roomId).nextTurn();
-        });
-
-        socket.on('newMessage', function(data){
-            getRoomById(data.roomId).sendMessage(data);
-        });
-
-        socket.on('cardMovement', function(data){
-            getRoomById(data.roomId).sendCardMovement(data);
-        })
-
+          
         socket.on('disconnect', function(){
             players--;
             console.log("Socket to be removed: "+ socket.id);
@@ -74,8 +46,9 @@ module.exports = function(app, io){
         function startNewGame(){          
             var roomId = generateRandomID();  
             var playersInQueue = queue.getClients();
+
             gameRooms.push(new GameRoom(roomId,playersInQueue, io)) 
-            io.emit("gameReady", {roomId: roomId, players: getPlayersInQueueHTML()} );
+            io.emit("gameReady", {players: getPlayersInQueueHTML()} );
             queue.clear();
         }
         
@@ -119,12 +92,6 @@ module.exports = function(app, io){
         });
         return playerInQueueString;
     }
-    //Current solution for fetching a room. CHANGE THIS
-    function getRoomById(roomId){
-     return gameRooms.filter(function( obj ) {
-        return obj.getRoomId() === roomId;
-    })[0];
-}
 }
 
   
