@@ -1,6 +1,6 @@
-var Player = function(userId, socketId, name){
+var Player = function(userId, socket, name){
     this.userId = userId;
-    this.socketId = socketId;
+    this.socket = socket;
     this.name = name;
     this.ready = 0;
     this.cards = [];
