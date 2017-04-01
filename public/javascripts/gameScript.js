@@ -4,7 +4,6 @@ var inGame = false;
 var socket = io();
 var name = $('.name').attr('data-name-value');
 var id = $('.id').attr('data-id-value');
-var roomId;
 var users;
 var sendDragInterval;
 var isDragging = false;
@@ -23,16 +22,10 @@ var timeLeftInterval;
     });  
 
     socket.on('gameReady', function(data){
-        socket.emit('joinRoom', {room: data.roomId, userId: id});
-        $("#roomId").html("Room: "+data.roomId);
-        roomId = data.roomId;
+        $("#roomId").html("Active room");
         gameState(data);
         chat();
     }); 
-
-
-
-
 
 //GAME SECTION  
 function gameState(data){
@@ -41,41 +34,56 @@ function gameState(data){
   
     $("#nextTurnButton").click(function() {
         console.log("Click");
-        socket.emit('nextTurn', { nextTurn : 1, roomId : roomId})
+        socket.emit('nextTurn', { userId: id})
         resetPlayerDragging();
         clearInterval(timeLeftInterval);
     })
 
-    socket.on(roomId+"/"+id, function(data){
+    socket.on("turn", function(data){
+        $('.category').attr('disabled','disabled');
         console.log(data);
         startRoundCountdown(data.time);
         removeCards();
         $("#round").html("Round: "+ data.round);
         if(data.isPlayersTurn){
+            $('.category').removeAttr('disabled');
             $("#turn").html("Its your turn");
             $("#nextTurnButton").show(); 
-            generateCardDropZone(data.player.cards, true);
-            generateCard(data.card, true ) 
+            generateCardDropZone(data.playersCards, true);
         }else{
             $("#turn").html("Its " + data.nameOfTurn + "'s turn");
             $("#nextTurnButton").hide(); 
             generateCardDropZone(data.cards, false);
-            generateCard(data.card, false )    
         }
     });
 
-    socket.on(roomId+"/cardMovement", function(data){
-        console.log("Movement was triggered");
-        var opponentCard = $(".opponentCard");
-        if(opponentCard){
-            console.log("Movement was triggered & card found");
-            opponentCard.animate({
-                left: data.x+"%"
-                 
-                });
-     
-            $("card-desc").html("X:"+data.x+"% Y:"+data.y+"%");
-        }
+    socket.on("cardMovement", function(data){   
+            var options = {
+            "my": "top left",
+            "at": "top left",
+            "of": "#"+data.slot,
+            using: function(pos){
+                if(!$(this).hasClass("correct")){
+                    if(data.success){
+                        $(this).addClass("correct");
+                        $(this).animate(pos, 1000, "swing", function(){
+                        $(this).css({"backgroundColor":"green"})
+                        });
+                    }else{
+                        $(this)
+                        .animate(pos, 1000, "swing", function(){
+                        $(this).css({"backgroundColor":"darkRed"})
+                        }) 
+                        .animate({top: -5+"%"}, 1000, "swing", function(){
+                            $(this).fadeOut(500, function(){
+                            $(this).remove();
+                        }); 
+                        })
+                    }
+                }  
+            }
+        };
+        $(".opponentCard").position(options);       
     });
 
     function startRoundCountdown(timelimit) {
@@ -96,10 +104,22 @@ function gameState(data){
         },500);
     };
 
+    $(".category").click(function() {
+        var category = $(this).attr("id");
+        socket.emit("getCard",
+        {userId: id,
+         category: category}
+         ,function(card){
+            generateCard(card, true ) 
+            $('.category').attr('disabled','disabled');
+        });
+    });
 
-    socket.on(roomId+"/"+id+"/forceNextTurn",function(data){
-        socket.emit('nextTurn', { nextTurn : 1, roomId : roomId})
-        resetPlayerDragging();
+    socket.on("newCard", function(data){
+         generateCard(data.card, false )  
+    });
+
+    socket.on("forceNextTurn",function(data){
         clearInterval(timeLeftInterval);
     });
 
@@ -110,7 +130,7 @@ function gameState(data){
 }
       
 function chat(){     
-    socket.on(roomId+'/message', function(data) {
+    socket.on('message', function(data) {
         if(data.message) {       
             $("#gameChatArea ul").append('<li>'+data.time +'|'+data.sender+': '+data.message+'</li>');   
             var chatarea = $("#gameChatArea");
@@ -125,9 +145,7 @@ function chat(){
             var text = $("#gameChatInput").val();
             console.log(name + " wrote :" + text);
             if(text){
-                socket.emit('newMessage', { message: text,
-                                                roomId: roomId, 
-                                                sender: name});
+                socket.emit('newMessage', { message: text, sender: name});
                 $("#gameChatInput").val("");
             }
         }
@@ -137,11 +155,12 @@ function chat(){
 function removeCards(){
     $(".card").remove();
     $(".opponentCard").remove();
+    $("#cardSlots").empty();
 }
 
 function generateCardDropZone(cards, isPlayersTurn){
     for ( var i=1; i<=10; i++ ) {
-        $('<div class="slot">  </div>').attr( 'id', i ).appendTo( '#cardSlots' ).droppable( {
+        $('<div class="slot">  </div>').attr( 'id', "slot"+i ).appendTo( '#cardSlots' ).droppable( {
         accept: '#cardPile div',
         hoverClass: 'hovered',
         drop: validateDrop
@@ -150,40 +169,19 @@ function generateCardDropZone(cards, isPlayersTurn){
 }
 
 function generateCard(card, isPlayersTurn){
-    if(isPlayersTurn){
+    if(isPlayersTurn) {
         $('<div class="card"><card-year>?</card-year><card-desc>'+card.description+'</card-desc> </div>')
         .attr('id', card.cardId)
         .appendTo( '#cardPile' ).draggable( {
-        containment: '#gameArea',
-        stack: '#cardPile div',
-        cursor: 'move',
-        revert: true,
-        drag: function(event, ui){
-            console.log("MOVING CARD")
-            var dragTime = 1;//ms
-            self = this;
-            if(!isDragging){
-                console.log("Sending")
-                isDragging = true;
-                sendDragInterval = setInterval(function(){
-                        var offset = $(self).offset();
-                        var left = offset.left;
-                        var top = offset.top;
-                        var pageX = $("body").width();
-                        var pageY = $("body").height(); 
-                        var percentX = (left / pageX) * 100; 
-                        var percentY = (top / pageY) * 100;
-                    socket.emit('cardMovement', { x: percentX, y: percentY, roomId: roomId});
-                    $("card-desc").html("X:"+left +" Y:"+ top);
-                    if(dragTime <= 0){
-                        resetPlayerDragging();
-                    }
-                    dragTime--;
-                },1000);
-            }     
-        }
+            containment: '#gameArea',
+            stack: '#cardPile div',
+            cursor: 'move',
+            revert: true,
+            start: function(){
+            $(this).data("origPosition",$(this).position());  
+            }
         });
-    } else{
+    } else {
             $('<div class="opponentCard"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
         .appendTo( '#cardPile' );
     }    
@@ -193,28 +191,34 @@ function validateDrop( event, ui ) {
   var slotNumber = $(this).attr("id");
   var cardId = ui.draggable.attr( "id" );
   var self = this;
-            
-
+  ui.draggable.draggable( 'option', 'revert', false );          
+  
   console.log("Slot id " + slotNumber);
   
 
   socket.emit('validateCardDrop', {
       slotnum: slotNumber, 
       userId: id,
-      cardId: cardId,
-      roomId: roomId
+      cardId: cardId
   },function(isValid){
     if (isValid) {
-
-        console.log("DID GO THROUGH Slot id " + slotNumber);
-        ui.draggable.addClass( 'correct' );
-        ui.draggable.draggable( 'disable' );
-        $(self).droppable( 'disable' );
-        ui.draggable.position( { of: $(self), my: 'left top', at: 'left top' } );
-        ui.draggable.draggable( 'option', 'revert', false );
-    }  
-  });
-
+         $('.category').removeAttr('disabled');
+         ui.draggable.addClass( 'correct' );
+         ui.draggable.draggable( 'disable' );
+         $(self).droppable( 'disable' );
+         ui.draggable.position( { of: $(self), my: 'left top', at: 'left top' } );
+         
+    } else{
+         console.log("Failed ");
+         ui.draggable.animate({top: -50+"px"});
+         ui.draggable.fadeOut(1000, function(){ $(this).remove();});
+    }
+});
+ 
+       
+        
+       
+        
  
 }
 
@@ -236,10 +240,7 @@ function countdown(){
     }, 1000);
 }
 
-function resetPlayerDragging(){
-    clearInterval(sendDragInterval);
-    isDragging = false;
-}
+
 
 window.onbeforeunload = function(event)
 {
@@ -247,5 +248,7 @@ window.onbeforeunload = function(event)
 };    
 
 });
+
+
 
 
