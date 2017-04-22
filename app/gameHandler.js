@@ -1,4 +1,5 @@
 var Player = require('./model/Player.js');
+
 const util = require('util');
 module.exports = function(app, io){
 
@@ -8,15 +9,10 @@ module.exports = function(app, io){
     var gameRooms = [];
     var players = 0;
     
-
  
     io.on('connection', function(socket){   
         players++;  
-        /*
-        |---------------------|
-        |----Queue Section----| 
-        |---------------------|
-        */
+
         socket.on('InitiliazeQueue', function (data) {
 
             if(!isPlayerAlreadyInQueue(data.userId)){

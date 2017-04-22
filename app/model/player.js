@@ -3,7 +3,7 @@ var Player = function(userId, socket, name){
     this.socket = socket;
     this.name = name;
     this.ready = 0;
-    this.cards = [];
+    this.cards = [0,0,0,0,0,0,0,0,0,0];
 }
 
 module.exports = Player;

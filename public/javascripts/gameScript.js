@@ -33,7 +33,6 @@ function gameState(data){
     socket.off('gameReady');
   
     $("#nextTurnButton").click(function() {
-        console.log("Click");
         socket.emit('nextTurn', { userId: id})
         resetPlayerDragging();
         clearInterval(timeLeftInterval);
@@ -63,27 +62,15 @@ function gameState(data){
             "at": "top left",
             "of": "#"+data.slot,
             using: function(pos){
-                if(!$(this).hasClass("correct")){
-                    if(data.success){
-                        $(this).addClass("correct");
-                        $(this).animate(pos, 1000, "swing", function(){
-                        $(this).css({"backgroundColor":"green"})
-                        });
-                    }else{
-                        $(this)
-                        .animate(pos, 1000, "swing", function(){
-                        $(this).css({"backgroundColor":"darkRed"})
-                        }) 
-                        .animate({top: -5+"%"}, 1000, "swing", function(){
-                            $(this).fadeOut(500, function(){
-                            $(this).remove();
-                        }); 
-                        })
-                    }
-                }  
+                if(data.success){
+                    $(this).addClass("correct");
+                    animateSuccess($(this), pos);
+                }else{
+                    animateFailure($(this), pos);
+                }
             }
         };
-        $(".opponentCard").position(options);       
+        $("#"+data.cardId).position(options);       
     });
 
     function startRoundCountdown(timelimit) {
@@ -143,7 +130,6 @@ function chat(){
     $("#gameChatInput").keyup(function(e) {
         if(e.keyCode == 13) {
             var text = $("#gameChatInput").val();
-            console.log(name + " wrote :" + text);
             if(text){
                 socket.emit('newMessage', { message: text, sender: name});
                 $("#gameChatInput").val("");
@@ -160,7 +146,7 @@ function removeCards(){
 
 function generateCardDropZone(cards, isPlayersTurn){
     for ( var i=1; i<=10; i++ ) {
-        $('<div class="slot">  </div>').attr( 'id', "slot"+i ).appendTo( '#cardSlots' ).droppable( {
+        $('<div class="slot">  </div>').attr( 'id', i ).appendTo( '#cardSlots' ).droppable( {
         accept: '#cardPile div',
         hoverClass: 'hovered',
         drop: validateDrop
@@ -169,57 +155,70 @@ function generateCardDropZone(cards, isPlayersTurn){
 }
 
 function generateCard(card, isPlayersTurn){
-    if(isPlayersTurn) {
-        $('<div class="card"><card-year>?</card-year><card-desc>'+card.description+'</card-desc> </div>')
-        .attr('id', card.cardId)
-        .appendTo( '#cardPile' ).draggable( {
+    console.log(card);
+    var dragOptions = {
             containment: '#gameArea',
             stack: '#cardPile div',
             cursor: 'move',
             revert: true,
             start: function(){
-            $(this).data("origPosition",$(this).position());  
-            }
-        });
+                $(this).data("origPosition",$(this).position()) 
+                } 
+            };
+
+
+    if(isPlayersTurn) {
+        $('<div class="card"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
+        .attr('id', card.id)
+        .appendTo( '#cardPile' ).draggable(dragOptions);
+        
     } else {
             $('<div class="opponentCard"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
-        .appendTo( '#cardPile' );
+        .appendTo( '#cardPile' ).attr('id', card.id);
     }    
 }
 
 function validateDrop( event, ui ) {
+ var draggedOptions = {
+            containment: '#cardSlots',
+            cursor: 'move',
+            revert: true,
+            start: function(){
+                $(this).data("origPosition",$(this).position()) 
+                } 
+  };
+
+
   var slotNumber = $(this).attr("id");
   var cardId = ui.draggable.attr( "id" );
+  var draggedCard = ui.draggable;
   var self = this;
-  ui.draggable.draggable( 'option', 'revert', false );          
-  
-  console.log("Slot id " + slotNumber);
-  
+  draggedCard.draggable( 'option', 'revert', false );          
 
-  socket.emit('validateCardDrop', {
+    socket.emit('moveCard', {
       slotnum: slotNumber, 
       userId: id,
       cardId: cardId
-  },function(isValid){
-    if (isValid) {
-         $('.category').removeAttr('disabled');
-         ui.draggable.addClass( 'correct' );
-         ui.draggable.draggable( 'disable' );
-         $(self).droppable( 'disable' );
-         ui.draggable.position( { of: $(self), my: 'left top', at: 'left top' } );
+    },function(isValid,year){ //Callback
+        if (isValid) {
+            draggedCard.draggable(draggedOptions);
+            console.log(year);
+            draggedCard.find("card-year").html(year)
+            
          
-    } else{
-         console.log("Failed ");
-         ui.draggable.animate({top: -50+"px"});
-         ui.draggable.fadeOut(1000, function(){ $(this).remove();});
-    }
-});
- 
-       
-        
-       
-        
- 
+            //draggedCard.data("slotNum", slotNumber.replace("slot", ""));
+            $('.category').removeAttr('disabled');
+            draggedCard.addClass( 'correct' )
+            draggedCard.addClass( 'dropped' );
+            //ui.draggable.draggable( 'disable' );
+            //$(self).droppable( 'disable' );
+            draggedCard.position( { of: $(self), my: 'left top', at: 'left top' } );
+            animateSuccess(draggedCard, null);
+        } else{
+            console.log("Failed ");
+            animateFailure(draggedCard, null);
+        }
+    }); 
 }
 
 function countdown(){
@@ -238,6 +237,36 @@ function countdown(){
             i--;
         }
     }, 1000);
+}
+
+function animateSuccess(cardObject, pos){
+    if(pos == null){
+        cardObject.css({"backgroundColor":"green"})
+    }else{
+       
+        cardObject.animate(pos, 1000, "swing", function(){
+        cardObject.css({"backgroundColor":"green"})
+    });
+    }  
+}
+
+function animateFailure(cardObject, pos){
+    if(pos == null){
+         cardObject.css({"backgroundColor":"darkRed"})
+         .animate({top: -5+"%"}, 1000, "swing", function(){
+        cardObject.fadeOut(500, function(){
+        cardObject.remove();
+            }); 
+        });
+    }else{ 
+        cardObject.animate(pos, 1000, "swing", function(){
+            cardObject.css({"backgroundColor":"darkRed"})
+        }).animate({top: -5+"%"}, 1000, "swing", function(){
+            cardObject.fadeOut(500, function(){
+            cardObject.remove();
+            }); 
+        });
+    }
 }
 
 

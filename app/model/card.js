@@ -1,30 +1,31 @@
-function Card(description, year, cardId){
-    this.description = description;
-    this.year = year;
-    this.cardId = cardId
-    this.isEnabled = true;
-}
+class Card{
+    constructor(id ,description, year){
+        this.id = id
+        this.description = description;
+        this.year = year;
+        this.isLocked = false;
+    }
 
-Card.prototype.enableCard = function(){
-    this.isEnabled = true;
-}
+    lock(){
+        this.isLocked = true;
+    }
 
-Card.prototype.disableCard = function(){
-    this.isEnabled = false;
-}
+    unlock(){
+        this.isLocked = false;
+    }
 
-Card.prototype.cardHTML = function(){
-    if(enableCard){
-        return null;
+    cardHTML(){
+        if(enableCard){
+            return null;
+        }
+    }
+
+    getYear(){
+        return this.year;
+    }
+
+    getDesc(){
+        return this.description;
     }
 }
-
-Card.prototype.getYear = function(){
-    return this.year;
-}
-
-Card.prototype.getDesc = function(){
-    return this.description;
-}
-
 module.exports = Card;
