@@ -73,6 +73,7 @@ function gameState(data){
         $("#"+data.cardId).position(options);       
     });
 
+
     function startRoundCountdown(timelimit) {
         clearInterval(timeLeftInterval);
         var progressbar = $( "#progressbar" ),
@@ -145,12 +146,34 @@ function removeCards(){
 }
 
 function generateCardDropZone(cards, isPlayersTurn){
-    for ( var i=1; i<=10; i++ ) {
+    var dragOptions = {
+            containment: '#gameArea',
+            stack: '#cardPile div',
+            cursor: 'move',
+            revert: true,
+            start: function(){
+                $(this).data("origPosition",$(this).position()) 
+                } 
+            };
+    
+    for (var i=1; i<=10; i++) { 
         $('<div class="slot">  </div>').attr( 'id', i ).appendTo( '#cardSlots' ).droppable( {
-        accept: '#cardPile div',
+        accept: '#cardPile div, #cardSlots div',
         hoverClass: 'hovered',
         drop: validateDrop
-        });
+    });
+        var card = cards[i-1];
+        if(card !== 0){
+            if(isPlayersTurn){
+                console.log(card);
+                    $('<div class="card"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
+                    .attr('id', card.id)
+                    .appendTo( '#'+i ).draggable(dragOptions);
+            }else{
+                $('<div class="opponentCard"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
+                .appendTo( '#'+i ).attr('id', card.id);
+            }
+        }
     }      
 }
 
@@ -215,6 +238,7 @@ function validateDrop( event, ui ) {
             draggedCard.position( { of: $(self), my: 'left top', at: 'left top' } );
             animateSuccess(draggedCard, null);
         } else{
+            $("#nextTurnButton").hide(); 
             console.log("Failed ");
             animateFailure(draggedCard, null);
         }
@@ -241,11 +265,11 @@ function countdown(){
 
 function animateSuccess(cardObject, pos){
     if(pos == null){
-        cardObject.css({"backgroundColor":"green"})
+        cardObject.css({"backgroundColor":"yellow"})
     }else{
        
         cardObject.animate(pos, 1000, "swing", function(){
-        cardObject.css({"backgroundColor":"green"})
+        cardObject.css({"backgroundColor":"yellow"})
     });
     }  
 }

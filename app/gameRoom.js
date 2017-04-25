@@ -28,6 +28,7 @@ class GameRoom{
         
             client.on('moveCard', function(data, callback) {
                 var card = self.getCardById(data.cardId);
+                self.addCardToSlot(data.slotnum, card);
                 if(self.handleDrop(data, card)) {
                     client.broadcast.to(self.roomId).emit("cardMovement", {cardId: data.cardId, slot: data.slotnum, success: true});
                     callback(true, card.year);
@@ -104,7 +105,6 @@ class GameRoom{
         var self = this;
         var timeleft = this.timeLimit
         
-
         //TODO: Handle first round specificly
             this.players.forEach(function(player){
             //The player whos turn it is
@@ -163,6 +163,19 @@ class GameRoom{
         } else {
              cards[slotNum] = card;
         }
+           console.log(cards);
+    }
+
+    removeUnlockedCards(){
+        var cards = this.players[this.turn].cards;
+        
+        for(var i = 0; i < cards.length; i++){
+            if(cards[i] !== 0){
+                if(!cards[i].isLocked){
+                    cards[i] = 0;
+                }
+            }
+        }
     }
 
 
@@ -172,7 +185,7 @@ class GameRoom{
             return false;
         }
         var cards = this.players[this.turn].cards; 
-        this.addCardToSlot(data.slotnum, card);
+        
         //Check if first drop
         var emptySlots = 0;
         cards.forEach(function(card){
@@ -187,15 +200,21 @@ class GameRoom{
         for(var i = 0; i <= cards.length; i++){
             var current = cards[i];
             
-            if(current === 0){ 
+            if(current === 0 || current == null){ 
                 continue; 
             }
                 for(var y = i+1; i <= cards.length - i; y++){
                     var next = cards[y];
-                    if(next === 0){ 
+                    if(y >= cards.length){
                         break;
                     }
-                    if(current.year > next.year){
+
+                    if(next === 0 ){ 
+                        continue;
+                    }
+                    
+                    if(current.year >= next.year){
+                        this.removeUnlockedCards();
                         return false;
                     } 
                 }
@@ -203,9 +222,15 @@ class GameRoom{
         return true;          
     };
 
-    
-
     nextTurn(delay){
+        var cards = this.players[this.turn].cards;
+        cards.forEach(function(card){
+            if(card !== 0){
+                card.isLocked = true;
+            }
+        });
+
+
         var self = this;
         clearInterval(this.turnTimer);
         setTimeout(function(){
@@ -240,6 +265,8 @@ class GameRoom{
         console.log("|ROOMID:"+this.roomId+"  |");
         console.log("|----------------|");
     }
+
+
 
 
     isUsersTurn(userId){
