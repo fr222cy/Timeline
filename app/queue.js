@@ -4,7 +4,7 @@ class Queue {
 
 constructor() {
     this.clients = [];
-    this.maxClients = 1;
+    this.maxClients = 2;
 }
 
 addPlayer(player) {
