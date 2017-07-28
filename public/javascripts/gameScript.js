@@ -1,376 +1,430 @@
 "use strict";
-$('document').ready(function(){
-var inGame = false;
-var socket = io();
-var name = $('.name').attr('data-name-value');
-var id = $('.id').attr('data-id-value');
-var users;
-var sendDragInterval;
-var isDragging = false;
-var opponentCardPosY;
-var opponentCardPosX;
-var timeLeftInterval;
+$('document').ready(function () {
+	var inGame = false;
+	var socket = io();
+	var name = $('.name').attr('data-name-value');
+	var id = $('.id').attr('data-id-value');
+	var users;
+	var sendDragInterval;
+	var isDragging = false;
+	var opponentCardPosY;
+	var opponentCardPosX;
+	var timeLeftInterval;
 
-// QUEUE SECTION
-    socket.on('connect', function (data) {
-        socket.emit('InitiliazeQueue', { userId: id, name: name });
-    });
+	/*
+			|--Queue Section--|
+	*/
+	socket.on('connect', function (data) {
+		socket.emit('InitiliazeQueue', { userId: id, name: name });
+	});
 
-    socket.on('queue', function(data){
-        $("#peopleLeft").html("Waiting for players : " + data.totalInQueue + "/" + data.maxPlayers);
-        $("#inqueue").html(data.inQueue);
-    });  
+	socket.on('queue', function (data) {
+		$("#peopleLeft").html("Waiting for players : " + data.totalInQueue + "/" + data.maxPlayers);
+		$("#inqueue").html(data.inQueue);
+	});
 
-    socket.on('gameReady', function(data){
-        $("#roomId").html("Active room");
-        gameState(data);
-        chat();
-    }); 
-
-//GAME SECTION  
-function gameState(data){
-    socket.off('queue');
-    socket.off('gameReady');
-  
-    $("#nextTurnButton").click(function() {
-        socket.emit('nextTurn', { userId: id})
-        disableChoice();
-        animateLockingCards();
-        resetPlayerDragging();
-        clearInterval(timeLeftInterval);
-    });
-
-    socket.on("turn", function(data){
-        $('#getCardButton').attr('disabled','disabled');
-        startRoundCountdown(data.time);
-        removeCards();
-        $("#round").html("Round: "+ data.round);
-        if(data.isPlayersTurn){
-            enableChoice();
-            $("#turn").html("Its your turn");
-            $("#nextTurnButton").show(); 
-            generateCardDropZone(data.playersCards, true);
-        }else{
-            $("#turn").html("Its " + data.nameOfTurn + "'s turn");
-            disableChoice();
-            generateCardDropZone(data.cards, false);
-        }
-    });
-
-    socket.on("cardMovement", function(data){   
-            var options = {
-            "my": "top left",
-            "at": "top left",
-            "of": "#"+data.slot,
-            using: function(pos){
-                if(data.success){
-                    $(this).addClass("correct");
-                    animateSuccess($(this), pos);
-                }else{       
-                    animateFailure($(this), pos);
-                }
-            }
-        };
-        $("#"+data.cardId).position(options);       
-    });
-
-    function startRoundCountdown(timelimit) {
-        clearInterval(timeLeftInterval);
-        var progressbar = $( "#progressbar" ),
-        progressLabel = $( ".progress-label" );
-        var timeleft = timelimit;
-        console.log(timelimit);
-
-        timeLeftInterval = setInterval(function(){
-            timeleft-=0.5;
-            var percentageLeft = (timeleft/timelimit) * 100;
-            $(".determinate").css({'width': percentageLeft + '%'});
-
-            if(timeleft==0){
-                
-            }
-        },500);
-    };
-
-    $("#getCardButton").click(function() {
-        var category = $(this).attr("id");
-        socket.emit("getCard",
-        {userId: id,
-         category: category}
-         ,function(card){
-            generateCard(card, true ) 
-            disableChoice();
-        });
-    });
-
-    socket.on("newCard", function(data){
-         generateCard(data.card, false )  
-    });
-
-    socket.on("forceNextTurn",function(data){
-        disableChoice();
-        clearInterval(timeLeftInterval);
-        
-    });
-
-    socket.on("notification", function(data) {
-        $("<h4>"+data.message+"</h4>")
-        .attr('id', 'message')
-        .appendTo("#notificationArea")
-        .hide()
-        .show("slide", { direction: "left" }, 1000, function(){
-            $(this).fadeOut(2000, function(){
-                $(this).remove();
-            }); 
-        });
-
-        if(data.lock != null){
-            animateLockingCards();
-        }
-        
-    });
-
-    $("#info").html("Quitting now gives a temporary ban");
-    $("#inqueue").html(data.players)
-    $("#leaveQueueButton").hide(1000);
-    countdown();
-}
-      
-function chat(){     
-    socket.on('message', function(data) {
-        if(data.message) {       
-            $("#gameChatArea ul").append('<li>'+data.time +'|'+data.sender+': '+data.message+'</li>');   
-            var chatarea = $("#gameChatArea");
-            chatarea.scrollTop(chatarea.prop('scrollHeight'));
-        }else {
-            console.log("Something went wrong:", data);
-        }
-    });
-
-    $("#gameChatInput").keyup(function(e) {
-        if(e.keyCode == 13) {
-            var text = $("#gameChatInput").val();
-            if(text){
-                socket.emit('newMessage', { message: text, sender: name});
-                $("#gameChatInput").val("");
-            }
-        }
-    });
-}
-
-function removeCards(){
-    $(".card").remove();
-    $("#cardSlots").empty();
-}
-
-function generateCardDropZone(cards, isPlayersTurn){
-    var dragOptions = {
-            containment: '#gameArea',
-            cursor: 'move',
-            revert: true,
-            start: function(){
-                $(this).data("origPosition",$(this).position()) 
-                } 
-            };
-    
-    for (var i=1; i<=10; i++) { 
-        $('<div class="slot">  </div>').attr( 'id', i ).appendTo( '#cardSlots' ).droppable( {
-        accept: '#cardPile div, #cardSlots div',
-        hoverClass: 'hovered',
-        drop: validateDrop
-    });
-        var card = cards[i-1];
-        if(card !== 0){
-            if(isPlayersTurn){
-                $('<div class="card"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
-                .attr('id', card.id)
-                .appendTo( '#'+i )
-                .data("isLocked", true)
-                .draggable(dragOptions);
-            }else{
-                $('<div class="card"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
-                .appendTo( '#'+i )
-                .attr('id', card.id)
-                .data("isLocked", true);
-            }
-        }
-    }      
-}
-
-function generateCard(card, isPlayersTurn){
-    console.log(card);
-    var dragOptions = {
-            containment: '#gameArea',
-            stack: '#cardPile div',
-            cursor: 'move',
-            revert: true,
-            start: function(){
-                $(this).data("origPosition",$(this).position()) 
-                } 
-            };
+	socket.on('gameReady', function (data) {
+		$("#roomId").html("Active room");
+		gameState(data);
+		chat();
+	});
 
 
-    if(isPlayersTurn) {
-        $('<div class="card"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
-        .attr('id', card.id)
-        .appendTo( '#cardPile' ).draggable(dragOptions);
-        
-    } else {
-        var oppcard = $('<div class="card"><card-year>'+card.year+'</card-year><card-desc>'+card.description+'</card-desc> </div>')
-        .appendTo( '#cardPile' ).attr('id', card.id);
-        oppcard.data("origPosition", oppcard.position());
-    }    
-}
+	/*
+			|--Game Section--|
+	*/
+	function gameState(data) {
 
-function validateDrop( event, ui ) {
- var draggedOptions = {
-            containment: '#cardSlots',
-            cursor: 'move',
-            revert: true,
-            start: function(){
-                $(this).data("origPosition",$(this).position()) 
-                } 
-  };
+		/*
+				|--Clickables--|
+		*/
+		$("#nextTurnButton").click(function () {
+			stopTurnCountdown();
+			socket.emit('nextTurn', { userId: id })
+			disableChoice();
+			animateLockingCards();
+			resetPlayerDragging();
 
+		});
 
-  var slotNumber = $(this).attr("id");
-  var cardId = ui.draggable.attr( "id" );
-  var draggedCard = ui.draggable;
-  var self = this;
-  draggedCard.draggable( 'option', 'revert', false );          
-
-    socket.emit('moveCard', {
-      slotnum: slotNumber, 
-      userId: id,
-      cardId: cardId
-    },function(isValid,cardAlreadyLocked,year ){ //Callback
-        if (isValid) {
-            draggedCard.draggable(draggedOptions);
-            console.log(year);
-            draggedCard.find("card-year").html(year)
-            
-         
-            //draggedCard.data("slotNum", slotNumber.replace("slot", ""));
-            enableChoice();
-            draggedCard.addClass( 'correct' )
-            draggedCard.addClass( 'dropped' );
-            //ui.draggable.draggable( 'disable' );
-            //$(self).droppable( 'disable' );
-            draggedCard.position( { of: $(self), my: 'left top', at: 'left top' } );
-            animateSuccess(draggedCard, null);
-        } else{
-
-            if(cardAlreadyLocked){
-                revertLockedCard(draggedCard)
-            }else{
-                draggedCard.find("card-year").html(year)
-                disableChoice();
-                animateFailure(draggedCard, null);
-            }
-        }
-    }); 
-}
-
-function revertLockedCard(cardObject){
-    cardObject.animate(cardObject.data("origPosition"));
-}
-
-function animateFailure(cardObject, pos){
-    
-
-    if(pos == null){
-            $(".card").each(function() {
-                var card = $(this);
-                if(!card.data("isLocked")){
-                    card.css({"backgroundColor":"#ff5722 "})
-                        card.fadeOut(500, function(){
-                            card.remove();
-                        }); 
-                }
-            });    
-    }else{ 
-        cardObject.animate(pos, 1000, "swing", function(){
-            cardObject.css({"backgroundColor":"#ff5722 "})
-        }).animate({top: -5+"%"}, 1000, "swing", function(){
-            cardObject.fadeOut(500, function(){
-                cardObject.remove();
-
-                $(".card").each(function() {
-                    var card = $(this);
-                    if(!card.data("isLocked")){
-                        card.css({"backgroundColor":"#ff5722 "})
-                            card.fadeOut(500, function(){
-                                card.remove();
-                            });        
-                    }
-                });
-            }); 
-        });
-    }
-}
-
-function animateSuccess(cardObject, pos){
-
-    if(pos == null){//If current players turn
-        if(!cardObject.data("isLocked")){
-            cardObject.css({"backgroundColor":"yellow"})
-        }
-    }else{//If opponent turn
-        cardObject.animate(pos, 1000, "swing", function(){
-            if(!cardObject.data("isLocked")){
-                cardObject.css({"backgroundColor":"yellow"})
-            }
-        });
-    }  
-}
-
-function animateLockingCards(){
-     $(".card").each(function() {
-            
-        $(this).animate({
-          backgroundColor: "#8bc34a",
-          color: "#fff",
-          width: 500
-        }, 1000 );
-        
-    });  
-}
-
-function countdown(){
-    var i = 2;
-    var myInterval = setInterval(function() {
-        $("#peopleLeft").html("All here! starting in "+i+" seconds");
-        if (i === 0) {    
-            //Hide the queueDiv and show the Gamearea  
-            $("#queueDiv").hide(500, function(){
-            $("#gameArea").show(300);
-            $("#queueDiv").css("display","none");
-        });  
-        clearInterval(myInterval);     
-        }else {
-            i--;
-        }
-    }, 1000);
-}
-
-function enableChoice(){
-    $('#getCardButton').removeAttr('disabled');
-    $('#getCardButton').show();
-    $("#nextTurnButton").show(); 
-}
-
-function disableChoice(){
-    $('#getCardButton').attr('disabled','disabled');
-    $('#getCardButton').hide();
-    $("#nextTurnButton").hide(); 
-}
+		$("#getCardButton").click(function () {
+			var category = $(this).attr("id");
+			socket.emit("getCard",
+				{
+					userId: id,
+					category: category
+				}
+				, function (card) {
+					generateCard(card, true)
+					disableChoice();
+				});
+		});
 
 
+		/*
+				|--Sockets--|
+		*/
 
-window.onbeforeunload = function(event)
-{
-    return confirm("If you refresh, the game will be considered lost. Proceed?");
-};    
+		socket.off('queue');
+		socket.off('gameReady');
+
+		socket.on("turn", function (data) {
+			unblockUserInterface();
+			$('#getCardButton').attr('disabled', 'disabled');
+			removeCards();
+			$("#round").html("Round: " + data.round);
+			if (data.isPlayersTurn) {
+				enableChoice();
+				$("#turn").html("Its your turn");
+				generateCardDropZone(data.playersCards, true);
+			} else {
+				$("#turn").html("Its " + data.nameOfTurn + "'s turn");
+				disableChoice();
+				generateCardDropZone(data.cards, false);
+			}
+		});
+
+		socket.on("cardMovement", function (data) {
+			var options = {
+				"my": "top left",
+				"at": "top left",
+				"of": "#" + data.slot,
+				using: function (pos) {
+					if (data.success) {
+						$(this).addClass("correct");
+						animateSuccess($(this), pos);
+					} else {
+						animateFailure($(this), pos);
+					}
+				}
+			};
+			$("#" + data.cardId).position(options);
+		});
+
+
+		socket.on('updateCountdown', function (data) {
+			startTurnCountdown(data.timeLimit);
+		})
+
+		socket.on("newCard", function (data) {
+			generateCard(data.card, false)
+		});
+
+		socket.on("forceNextTurn", function (data) {
+			disableChoice();
+			clearInterval(timeLeftInterval);
+			animateLockingCards();
+		});
+
+		socket.on("notification", function (data) {
+			$("<h5>" + data.message + "</h5>")
+				.attr('id', 'message')
+				.appendTo("#notificationArea")
+				.hide()
+				.show("slide", { direction: "left" }, 1000, function () {
+					$(this).fadeOut(2000, function () {
+						$(this).remove();
+					});
+				});
+
+			if (data.lock != null) {
+				animateLockingCards();
+				stopTurnCountdown();
+			}
+		});
+
+		socket.on("redirectToLobby", function (date) {
+			window.location.href = "/lobby";
+		});
+
+		$("#info").html("Quitting now gives a temporary ban");
+		$("#inqueue").html(data.players)
+		$("#leaveQueueButton").hide(1000);
+		changeToGameView();
+	}
+
+	/*
+			|--Chat--|
+	*/
+
+	function chat() {
+		socket.on('message', function (data) {
+			if (data.message) {
+				$("#gameChatArea ul").append('<li>' + data.sender + ': ' + data.message + '</li>');
+				var chatarea = $("#gameChatArea");
+				chatarea.scrollTop(chatarea.prop('scrollHeight'));
+			} else {
+				console.log("Something went wrong:", data);
+			}
+		});
+
+		$("#gameChatInput").keyup(function (e) {
+			if (e.keyCode == 13) {
+				var text = $("#gameChatInput").val();
+				if (text) {
+					socket.emit('newMessage', { message: text, sender: name });
+					$("#gameChatInput").val("");
+				}
+			}
+		});
+	}
+
+
+	/*
+			|--Cards and slots--|
+	*/
+	function generateCardDropZone(cards, isPlayersTurn) {
+		var dragOptions = {
+			containment: '#gameArea',
+			cursor: 'move',
+			revert: true,
+			start: function () {
+				$(this).data("origPosition", $(this).position())
+			}
+		};
+
+		for (var i = 1; i <= 10; i++) {
+			$('<div class="slot">  </div>').attr('id', i).appendTo('#cardSlots').droppable({
+				accept: '#cardPile div, #cardSlots div',
+				hoverClass: 'hovered',
+				drop: validateDrop
+			});
+			var card = cards[i - 1];
+			if (card !== 0) {
+				var visualCard = $('<div class="card"><span id="cardYear">' + card.year + '</span><span id="cardDesc">' + card.description + '</span> </div>')
+					.attr('id', card.id)
+					.appendTo('#' + i)
+					.data("isLocked", true)
+
+				if (isPlayersTurn) {
+					visualCard.draggable(dragOptions);
+				}
+			}
+		}
+	}
+
+	function generateCard(card, isPlayersTurn) {
+		console.log(card);
+		var dragOptions = {
+			containment: '#gameArea',
+			stack: '#cardPile div',
+			cursor: 'move',
+			revert: true,
+			start: function () {
+				$(this).data("origPosition", $(this).position())
+			}
+		};
+
+
+		var visualCard = $('<div class="card"><span id="cardYear">' + card.year + '</span><span id="cardDesc">' + card.description + '</span> </div>')
+			.attr('id', card.id).appendTo('#cardPile')
+
+		if (isPlayersTurn) {
+			visualCard.draggable(dragOptions);
+		} else {
+			visualCard.data("origPosition", visualCard.position());
+		}
+
+		$("#cardDesc").textfill({
+			minFontPixels: 4,
+			maxFontPixels: 100
+		});
+	}
+
+	function validateDrop(event, ui) {
+		var draggedOptions = {
+			containment: '#cardSlots',
+			cursor: 'move',
+			revert: true,
+			start: function () {
+				$(this).data("origPosition", $(this).position())
+			}
+		};
+
+
+		var slotNumber = $(this).attr("id");
+		var cardId = ui.draggable.attr("id");
+		var draggedCard = ui.draggable;
+		var self = this;
+		draggedCard.draggable('option', 'revert', false);
+
+		socket.emit('moveCard', {
+			slotNum: slotNumber,
+			userId: id,
+			cardId: cardId
+		}, function (isValid, cardAlreadyLocked, year, isCardLocked) { //Callback
+			if (isValid) {
+				draggedCard.draggable(draggedOptions);
+				draggedCard.find("#cardYear").html(year)
+
+
+				//draggedCard.data("slotNum", slotNumber.replace("slot", ""));
+				if (!isCardLocked) {
+					enableChoice();
+				}
+
+				draggedCard.addClass('correct')
+				draggedCard.addClass('dropped');
+				//ui.draggable.draggable( 'disable' );
+				//$(self).droppable( 'disable' );
+				draggedCard.position({ of: $(self), my: 'left top', at: 'left top' });
+				animateSuccess(draggedCard, null);
+			} else {
+
+				if (cardAlreadyLocked) {
+					revertLockedCard(draggedCard)
+				} else {
+					draggedCard.find("#cardYear").html(year)
+					disableChoice();
+					animateFailure(draggedCard, null);
+				}
+			}
+		});
+	}
+
+	/*
+			|--Animations--|
+	*/
+	function revertLockedCard(cardObject) {
+		cardObject.animate(cardObject.data("origPosition"));
+	}
+
+	function removeCards() {
+		$(".card").remove();
+		$("#cardSlots").empty();
+	}
+
+	function animateFailure(cardObject, pos) {
+
+		if (pos == null) { // if current players turn (ugly)
+			$(".card").each(function () {
+				var card = $(this);
+				if (!card.data("isLocked")) {
+					card.css({ "backgroundColor": "#ff5722 " })
+					card.fadeOut(500, function () {
+						card.remove();
+					});
+				}
+			});
+		} else {
+			cardObject.animate(pos, 1000, "swing", function () {
+				$(".card").each(function () {
+					var card = $(this);
+					if (!card.data("isLocked")) {
+						card.css({ "backgroundColor": "#ff5722 " })
+						card.fadeOut(500, function () {
+							card.remove();
+						});
+					}
+				});
+
+				cardObject.css({ "backgroundColor": "#ff5722 " })
+			}).animate({ top: -5 + "%" }, 1000, "swing", function () {
+				cardObject.remove();
+			});
+		}
+	}
+
+	function animateSuccess(cardObject, pos) {
+
+		if (pos == null) {//If current players turn
+			if (!cardObject.data("isLocked")) {
+				cardObject.css({ "backgroundColor": "yellow" })
+			}
+		} else {//If opponent turn
+			cardObject.animate(pos, 1000, "swing", function () {
+				if (!cardObject.data("isLocked")) {
+					cardObject.css({ "backgroundColor": "yellow" })
+				}
+			});
+		}
+	}
+
+	function animateLockingCards() {
+		$(".card").each(function () {
+
+			$(this).animate({
+				backgroundColor: "#8bc34a",
+				color: "#fff",
+				width: 500
+			}, 1000);
+
+		});
+	}
+
+	function changeToGameView() {
+		var i = 2;
+		var myInterval = setInterval(function () {
+			$("#peopleLeft").html("All here! starting in " + i + " seconds");
+			if (i === 0) {
+				//Hide the queueDiv and show the Gamearea  
+				$("#queueDiv").hide(500, function () {
+					$("#gameArea").show(300);
+					blockUserInterfaceWithMessage("Waiting for other players to load...");
+					$("#queueDiv").css("display", "none");
+				});
+				clearInterval(myInterval);
+			} else {
+				i--;
+			}
+		}, 1000);
+	}
+
+	function startTurnCountdown(timelimit) {
+		clearInterval(timeLeftInterval);
+		var progressbar = $("#progressbar"),
+			progressLabel = $(".progress-label");
+		var timeleft = timelimit;
+		console.log(timelimit);
+
+		timeLeftInterval = setInterval(function () {
+			timeleft -= 0.1;
+			var percentageLeft = (timeleft / timelimit) * 100;
+			$(".determinate").css({ 'width': percentageLeft + '%' });
+			$("#progressTime").html(Math.round(timeleft));
+			if (timeleft == 0) {
+
+			}
+		}, 100);
+	};
+
+	function stopTurnCountdown() {
+		clearInterval(timeLeftInterval)
+	}
+
+	function enableChoice() {
+		$('#getCardButton').removeAttr('disabled');
+		$('#getCardButton').show();
+		$("#nextTurnButton").show();
+	}
+
+	function disableChoice() {
+		$('#getCardButton').attr('disabled', 'disabled');
+		$('#getCardButton').hide();
+		$("#nextTurnButton").hide();
+	}
+
+	function blockUserInterfaceWithMessage(message) {
+		$.blockUI({
+			message: '<p> ' + message + '</p>',
+			css: {
+				border: 'none',
+				padding: '15px',
+				width: '20%',
+				height: '10%',
+				backgroundColor: '#000',
+				'-webkit-border-radius': '10px',
+				'-moz-border-radius': '10px',
+				opacity: .5,
+				color: '#fff'
+			}
+		});
+	}
+
+	function unblockUserInterface() {
+		$.unblockUI();
+	}
+
 
 });
 
