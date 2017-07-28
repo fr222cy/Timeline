@@ -4,6 +4,7 @@ class Card{
         this.description = description;
         this.year = year;
         this.isLocked = false;
+        this.isDropped = false;
     }
 
     lock(){

@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
-var io = require('socket.io')(http, {'pingInterval': 2000, 'pingTimeout': 5000});
+var io = require('socket.io')(http, {'pingInterval': 2000, 'pingTimeout': 10000});
 
 var port = process.env.PORT || 8080;
 var morgan = require('morgan');

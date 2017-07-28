@@ -8,7 +8,7 @@ module.exports = function(app, passport, io){
     require('./gameHandler.js')(app, io);
 
     app.get('/', function (req, res){
-        res.render('index.ejs', {amountOfPlayers: 0});
+        res.render('index.ejs', {amountOfPlayers: io.engine.clientsCount});
     });
 
     app.get('/logout', function(req, res){
