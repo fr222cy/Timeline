@@ -28,10 +28,8 @@
             <a id="nextTurnButton" class="waves-effect green btn-large">Save and end turn!</a>
             <a id="getCardButton" class="waves-effect amber btn-large">Pick Card!</a>
           </div>
-        <div id="roundInfo">
-            <span>Earlier</span>
-              <span id="turn"></span>   
-            <span>Later</span>
+        <div id="roundInfo">  
+              <h5 id="turn"></h5>   
         </div>
 
           <div id="gameChat" class="green left">
@@ -45,7 +43,7 @@
           <h5 id="gametime"></h5>    
           <div id="cardPile">
             
-        
+
           </div> 
           <div id="cardGenerator"></div>
           <div class="progress">
@@ -55,12 +53,8 @@
           </div>   
           <div id="cardSlots">        
           </div>
-           
-          
-        
         </div>
-          
-    
+           
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>  
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>  
     <script src="/public/javascripts/jquery.textfill.min.js"></script>
@@ -69,10 +63,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/public/javascripts/gameScript.js"></script>
     <div class='name' data-name-value='<%= user.facebook.name %>'></div>
-    <div class='id' data-id-value='<%= user.facebook.id %>'></div>
-  
-
-
+    <div class='id' data-id-value='<%= user.id %>'></div>
 </body>
- <% include footer %>
 </html>

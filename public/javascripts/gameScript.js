@@ -43,8 +43,6 @@ $('document').ready(function () {
 			socket.emit('nextTurn', { userId: id })
 			disableChoice();
 			animateLockingCards();
-			resetPlayerDragging();
-
 		});
 
 		$("#getCardButton").click(function () {
@@ -78,7 +76,7 @@ $('document').ready(function () {
 				$("#turn").html("Its your turn");
 				generateCardDropZone(data.playersCards, true);
 			} else {
-				$("#turn").html("Its " + data.nameOfTurn + "'s turn");
+				$("#turn").html("You are watching " + data.nameOfTurn);
 				disableChoice();
 				generateCardDropZone(data.cards, false);
 			}
@@ -133,7 +131,37 @@ $('document').ready(function () {
 			}
 		});
 
-		socket.on("redirectToLobby", function (date) {
+		socket.on("gameOver", function (data) {
+			stopTurnCountdown();
+			disableChoice();
+			animateLockingCards();
+			
+			var gameOverTitle = "";
+			var gameOverDesc = "";
+
+			switch(data.reason) {
+			case "GAME_WON":
+				gameOverTitle = "WE HAVE A WINNER!";
+				gameOverDesc = data.winners + " has won the game! Congratulations!"  ;
+				break;
+			case "GAME_DRAW":
+				gameOverTitle = "WE HAVE A DRAW!";
+				gameOverDesc = "The draw is between: ";
+				gameOverDesc += winners;
+				break;
+			case "NO_MORE_PLAYERS":
+				gameOverTitle = "YOU HAVE WON!";
+				gameOverDesc = "There are no more players in the room!";
+				break;
+			case "NO_MORE_CARDS":
+				gameOverTitle = "NO MORE CARDS!";
+				gameOverDesc = "This is embarrasing...\n Feel free to contribute and submit more cards!";
+				break;
+			}
+			blockUserInterfaceWithTitleAndMessage(gameOverTitle, gameOverDesc);
+		});
+
+		socket.on("redirectToLobby", function (data) {
 			window.location.href = "/lobby";
 		});
 
@@ -423,6 +451,23 @@ $('document').ready(function () {
 
 	function unblockUserInterface() {
 		$.unblockUI();
+	}
+
+	function blockUserInterfaceWithTitleAndMessage(title, message) {
+		$.blockUI({
+			message: '<h3>'  + title + ' </h3><br><span>' + message + '</span><br><p>You will be redirected to the lobby shortly...</p> ',
+			css: {
+				border: 'none',
+				padding: '15px',
+				width: '40%',
+				height: '30%',
+				backgroundColor: '#000',
+				'-webkit-border-radius': '10px',
+				'-moz-border-radius': '10px',
+				opacity: .5,
+				color: '#fff'
+			}
+		});
 	}
 
 

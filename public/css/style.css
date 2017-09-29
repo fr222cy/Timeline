@@ -10,9 +10,6 @@ html{
   position:relative;
 }
 
-
-
-
 .icon-block {
   padding: 0 15px;
 }
@@ -22,7 +19,8 @@ html{
 
 body{
   color: white;
-  background-image: url("../images/background.jpg");
+  background-color: black;
+  /*background-image: url("../images/background.jpg");*/
   height:100%;
 }
 
@@ -32,6 +30,43 @@ footer{
   right:0;
   margin-right: 2px;
   text-align: center;
+  background-color: #4caf50;
+  width: 100%;
+}
+
+
+/* Lobby section */
+
+#statsSection {
+  border: none;
+  padding: 15px;
+  background-color: #4caf50;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+ 
+  width:20%;
+  float:left;
+}
+
+#actionSection {
+  position: absolute;
+  margin-left: 25%;
+}
+
+#ladderSection {
+  border: none;
+  padding: 15px;
+  background-color: #4caf50;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+
+  width:20%;
+  float:right;
+}
+
+#friendsSection { 
+  width:20%;
+  background: blue;
 }
 
 /* Game section */
@@ -65,6 +100,7 @@ footer{
   overflow-y: scroll;
   position:absolute;
   width:100%;
+  padding-left: 7px;
   max-height: 75%;
   min-height: 75%;
 }
@@ -72,6 +108,7 @@ footer{
 #gameChatInput{
   bottom:0;
   position:absolute;
+  padding-left: 7px;
   left:0;
   margin-bottom: 0;
 }
@@ -192,10 +229,11 @@ footer{
     height: 100%;
     min-width: 100%;
     position: absolute;
+    margin-top: initial;
     color: #fff;
     float: left;
     background-color: #8bc34a;
-    z-index: 1;
+    z-index: 2;
  }
 
  
@@ -257,11 +295,7 @@ footer{
   overflow: hidden;
 }
 
-#progressTime {
-  z-index: 2;
-  font-size:16px;
-  color:black;
-}
+
 
 .determinate {
     z-index: 1;

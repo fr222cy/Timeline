@@ -34,7 +34,9 @@ app.set('view engine', 'ejs');
 require('./app/routes.js')(app, passport, io);
 
 
-
+//process.on('uncaughtException', function (error) {
+//   console.log(error.stack);
+//});
 
 http.listen(port, function(){
   console.log("server on!");

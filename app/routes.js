@@ -21,7 +21,7 @@ module.exports = function(app, passport, io){
     });
 
 
-    app.get('/game', isLoggedIn, function(req, res){
+    app.get('/play', isLoggedIn, function(req, res){
        res.render('game.ejs', {user: req.user});    
     });
 

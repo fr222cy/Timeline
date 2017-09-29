@@ -4,14 +4,35 @@
 <body>
 <% include navbar %>
     <div class="section no-pad-bot" id="index-banner">
-     <div class="container">
-        <br><br>
-        <h1 class="header center ">Lobby</h1>
-     </div>
-    </div>    
-        <h5 class="center">Press search to do a matchmaking!</h5>
-        <p class="center"><a href="/game" class="btn btn-primary"><span class="fa fa"></span> Search for game</a></p>
 
+    </div>    
+    <div class="container">
+        <div id="statsSection" >
+            <h5>Played games: 0</h5>
+            <h5>Wins: 0</h5>
+            <h5>Drawed: 0</h5>
+            <h5>Win Ratio: N/A</h5>
+        </div>
+
+        <div id="actionSection" >
+        <p id="searchGameButton"><a href="/play" class="btn btn-primary green "><span class="fa fa"></span>   Search for game</a></p>
+        <p id="customGameButton"><a href="" class="btn btn-primary grey "><span class="fa fa"></span>   Create custom game (NOT Available)</a></p>
+        </div>
+        
+        <div id="ladderSection">
+            <h5> Ladder </h5>
+            <ol> 
+                <li>Kiosken</li>
+                <li>Mongot</li>
+                <li>Kisok</li>
+                <li>Mong</li>
+                <li>Mong Ot</li>
+            </ol>
+        </div>
+    </div>
+      
+
+        
 </body>
  <% include footer %>
 </html>

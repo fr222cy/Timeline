@@ -12,10 +12,11 @@ var userSchema = mongoose.Schema({
         token: String,
         email: String, 
         name: String,
-        username: String,
-        wins: Number,
-        losses: Number
-    }
+        username: String
+    },
+    wins: Number,
+    drawed: Number,
+    played: Number
 });
 
 userSchema.methods.generateHash = function(password){
