@@ -1,4 +1,4 @@
-var Player = require('./model/Player.js');
+var Player = require('./model/player.js');
 
 const util = require('util');
 module.exports = function(app, io){
