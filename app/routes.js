@@ -56,11 +56,17 @@ module.exports = function (app, passport, io) {
 		});
 
 	app.get('/newUser', isLoggedIn, function (req, res) {
+			User.findOne({ '_id': req.user._id }, function (err, user) {
+			if (user.displayname !== null) {
+				res.redirect("/lobby");
+			}
+		});
+
 		res.render('setName.ejs', { message: req.flash('setDisplaynameMessage') });
 	});
 
 	app.post('/newUser', function (req, res) {
-		addDisplayName(req, req.body.displayname, function (isValid) {
+		addDisplayName(req,res, function (isValid) {
 			if (!isValid) {
 				res.redirect("/newUser");
 				return;

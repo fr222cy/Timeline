@@ -1,4 +1,6 @@
-function addDisplayname(req, displayname, cb) {
+User = require('./../dao/user.js')
+function addDisplayname(req,res, cb) {
+  var displayname = req.body.displayname;
   User.findOne({'displayname' : displayname}, function(err, alreadyExistingUser) { // Check if name already exists
     if(err) {
       req.flash('setDisplaynameMessage', 'Something went wrong! Please try again');
