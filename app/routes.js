@@ -60,8 +60,7 @@ module.exports = function (app, passport, io) {
 	});
 
 	app.post('/newUser', function (req, res) {
-		req.body.displayname;
-		addDisplayname(req, req.body.displayname, function (isValid) {
+		addDisplayName(req, req.body.displayname, function (isValid) {
 			if (!isValid) {
 				res.redirect("/newUser");
 				return;
