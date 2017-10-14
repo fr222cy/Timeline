@@ -2,9 +2,9 @@ const util = require('util');
 
 class Queue {
 
-constructor() {
+constructor(maxClients) {
     this.clients = [];
-    this.maxClients = 2;
+    this.maxClients = maxClients;
 }
 
 addPlayer(player) {
@@ -13,6 +13,7 @@ addPlayer(player) {
 
 removePlayer(socketId) {
     var index = this.clients.indexOf(this.getPlayer(socketId));
+    console.log("indexToRemove -> " + index)
     if(index > -1)
         this.clients.splice(index, 1);   
 };
@@ -22,13 +23,13 @@ clear() {
 };
 
 getPlayer(socketId) {
-    var playerToreturn;
+    var playerToReturn;
 
     this.clients.forEach(function(player) {
         if(player.socketId === socketId)
-            playerToreturn = player;
+            playerToReturn = player;
     });
-    return playerToreturn;
+    return playerToReturn;
 };
 
 updatePlayer(userId, newSocketId) {

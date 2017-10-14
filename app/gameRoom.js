@@ -1,6 +1,7 @@
-var Card = require('./model/card.js');
-var cardSchema = require('./model/cardSchema.js');
-var userSchema = require('./model/user.js');
+var Card = require('./domain/card.js');
+var cardSchema = require('./dao/cardSchema.js');
+var userSchema = require('./dao/user.js');
+var async = require('async');
 
 class GameRoom {
 	constructor(roomId, players, io, gameOverCallback) {
@@ -45,7 +46,7 @@ class GameRoom {
 			//Data     -> slotNum, userId, cardId
 			//Movecard -> next(isValidDrop, isCardLocked, cardYear, isCardDropped)
 			client.on('moveCard', function (data, next) {
-				var oldCards = self.players[self.turn].cards.slice(0);
+				var oldCards = self.getPlayerPropertyByIndex(self.turn,'cards').slice(0);
 				var card = self.getCardById(data.cardId);
 
 				self.isValidDrop(data, card, function (isValid) {
@@ -53,12 +54,12 @@ class GameRoom {
 						client.broadcast.to(self.roomId).emit("cardMovement", { cardId: data.cardId, slot: data.slotNum, success: true });
 						next(true, null, card.year, card.isDropped);
 						card.isDropped = true;
-						var cards = self.players[self.turn].cards.slice(0);
+						var cards = self.getPlayerPropertyByIndex(self.turn,'cards').slice(0);
 						cards = cards.filter(self.removeEmptySlots);
 						if (cards.length == 10) {
-							self.playersHaveAllCards.push(self.players[self.turn]);
+							self.playersHaveAllCards.push(self.getPlayerByIndex(self.turn));
 							self.lastRound = true;
-							client.broadcast.to(self.roomId).emit("notification", { message: "LAST ROUND! " + self.players[self.turn].name + " has 10 cards locked! " })
+							client.broadcast.to(self.roomId).emit("notification", { message: "LAST ROUND! " + self.getPlayerPropertyByIndex(self.turn,'name') + " has 10 cards locked! " })
 							self.nextTurn(2000);
 						}
 					}
@@ -70,7 +71,7 @@ class GameRoom {
 						}
 						else {
 							next(false, true, null, card.isDropped);
-							self.players[self.turn].cards = oldCards;
+							self.getPlayerPropertyByIndex(self.turn,'cards') = oldCards;
 						}
 					}
 				});
@@ -80,7 +81,7 @@ class GameRoom {
 				self.isUsersTurn(data.userId, function (isUserTurn) {
 
 					if (isUserTurn) {
-						client.broadcast.to(self.roomId).emit("notification", { message: self.players[self.turn].name + " took a card!" })
+						client.broadcast.to(self.roomId).emit("notification", { message: self.getPlayerPropertyByIndex(self.turn, 'name')+ " took a card!" })
 						self.getRandomCard(function (card) {
 
 							client.broadcast.to(self.roomId).emit("newCard", { card: card })
@@ -97,7 +98,7 @@ class GameRoom {
 			client.on('nextTurn', function (data) {
 				self.isUsersTurn(data.userId, function (isUserTurn) {
 					if (isUserTurn) {
-						client.broadcast.to(self.roomId).emit("notification", { message: self.players[self.turn].name + " locked the timeline!", lock: true });
+						client.broadcast.to(self.roomId).emit("notification", { message: self.getPlayerPropertyByIndex(self.turn,'name') + " locked the timeline!", lock: true });
 						self.nextTurn(3000);
 					}
 				});
@@ -108,14 +109,21 @@ class GameRoom {
 			});
 
 			client.on('disconnect', function () {
+				console.log("SOMEONE DISCONNECTED")
 				client.broadcast.to(self.roomId).emit("notification", { message: player.name + " has left the game!" });
-				if (self.players.length <= 2) {
-					self.gameOver("NO_MORE_PLAYERS");
-					return;
-				}
+
 				self.isUsersTurn(player.userId, function (isUserTurn) {
 					self.players.splice(self.players.indexOf(player), 1)
+					if (self.players.length === 1) {
+						self.gameOver("NO_MORE_PLAYERS");
+						return;
+					}
+					if (self.players.length === 0) {
+						return;
+					}
+					
 
+					console.log("PLAYERS LENGTH BEFORE : " + self.players.length)
 					if (isUserTurn) {
 						if (self.turn + 1 > self.players.length - 1) {
 							self.round++;
@@ -124,7 +132,7 @@ class GameRoom {
 							self.turn++;
 						}
 						self.newTurn();
-					}
+					}		
 				});
 			});
 		});
@@ -133,7 +141,6 @@ class GameRoom {
 	waitBeforeStart() {
 		var self = this;
 		setTimeout(function () {
-			self.notifyPlayers("Please wait for the game to start...");
 			self.notifyPlayers("Game started!");
 			self.newTurn();
 		}, 7000);
@@ -178,10 +185,9 @@ class GameRoom {
 
 	newTurn() {
 		var self = this;
-		//TODO: Handle first round specificly
 		this.players.forEach(function (player) {
 			//The player whos turn it is
-			if (self.players[self.turn] == player) {
+			if (self.getPlayerByIndex(self.turn) == player) {
 				self.io.to(player.socket.id).emit("notification", { message: "It's your turn" });
 				self.io.to(player.socket.id).emit("turn", {
 					round: self.round,
@@ -202,6 +208,7 @@ class GameRoom {
 	}
 
 	startCountdown() {
+		
 		var self = this;
 		clearInterval(self.turnTimer);
 		var timeleft = this.timeLimit;
@@ -211,9 +218,13 @@ class GameRoom {
 		});
 
 		this.turnTimer = setInterval(function () {
-
+			if(self.players.length <= 0) {
+				self.gameOver("EMPTY_ROOM");
+			}
 			if (timeleft === 0) {
-				self.io.to(self.players[self.turn].socket.id).emit("forceNextTurn");
+				console.log("Room id:" + self.roomId)
+				console.log("INSIDE COUNTDOWN : PLAYERS ->" + self.players.length)
+				self.io.to(self.getPlayerPropertyByIndex(self.turn,'socket').id).emit("forceNextTurn");
 				self.nextTurn(3000);
 				self.notifyPlayers("Time ran out! Switching to next player")
 				clearInterval(self.turnTimer);
@@ -235,7 +246,7 @@ class GameRoom {
 		if (player != null) {//exists first round only
 			var cards = player.cards;
 		} else {
-			var cards = this.players[this.turn].cards;
+			var cards = this.getPlayerPropertyByIndex(this.turn, 'cards');
 		}
 		slotNum--; // fit with array index
 		if (cards[slotNum] === 0 || cards[slotNum] === null || cards[slotNum] === card) { //Ensure no cards are in the slot
@@ -252,7 +263,7 @@ class GameRoom {
 	}
 
 	removeUnlockedCards() {
-		var cards = this.players[this.turn].cards;
+		var cards = this.getPlayerPropertyByIndex(this.turn,'cards');
 		for (var i = 0; i < cards.length; i++) {
 			if (cards[i] !== 0) {
 				if (!cards[i].isLocked) {
@@ -269,14 +280,12 @@ class GameRoom {
 				next(false);
 				return;
 			}
-			console.log("Before adding:" + self.players[self.turn].cards);
 			self.addCardToSlot(data.slotNum, card, null, function (couldAddCard) {
 				if (!couldAddCard) {
 					next(false);
 					return;
 				}
-				console.log("After adding:" + self.players[self.turn].cards);
-				var cards = self.players[self.turn].cards.slice(0);
+				var cards = self.getPlayerPropertyByIndex(self.turn,'cards').slice(0);
 				var cards = cards.filter(self.removeEmptySlots)
 
 				if (cards.length === 1) {
@@ -284,25 +293,21 @@ class GameRoom {
 					return;
 				}
 				//Validate if all cards are in order by year.
-				console.log("filtered:" + cards);
 				for (var i = 0; i <= cards.length; i++) {
 					if (cards[i + 1] == null) {
 						next(true);
 						return;
 					}
-					var current = cards[i];
-				
-					var nextCard = cards[i + 1];
-					console.log(nextCard.year);
+					var current = Number(cards[i].year);
+					var nextCard = Number(cards[i + 1].year);
 
-					if (current.year > nextCard.year) {
+					if (current > nextCard) {
 						self.removeUnlockedCards();
 						next(false);
 						return;
 					}
 				};
 				next(true);
-
 			});
 		});
 	}
@@ -312,7 +317,7 @@ class GameRoom {
 	}
 
 	nextTurn(delay) {
-		var cards = this.players[this.turn].cards;
+		var cards = this.getPlayerPropertyByIndex(this.turn, 'cards');
 		cards.forEach(function (card) {
 			if (card !== 0) {
 				card.isLocked = true;
@@ -322,26 +327,19 @@ class GameRoom {
 		clearInterval(this.turnTimer);
 		setTimeout(function () {
 			if (self.turn + 1 > self.players.length - 1) {
-
-				if(self.lastRound) {
-					var temp = 0;
-					self.playersHaveAllCards.forEach( function(player){
-						temp++;
-					})
-					if(temp > 1) {
+				if (self.lastRound) {
+					if (self.playersHaveAllCards.length > 1) {
 						self.gameOver("GAME_DRAW");
-					}else {
+					} else {
 						self.gameOver("GAME_WON");
 					}
 					return;
 				}
-
 				self.round++;
 				self.turn = 0;
 			} else {
 				self.turn++;
 			}
-
 			self.newTurn();
 		}, delay);
 	};
@@ -362,73 +360,109 @@ class GameRoom {
 	}
 
 	isUsersTurn(userId, next) {
-		next(userId == this.players[this.turn].userId);
+		next(userId == this.getPlayerPropertyByIndex(this.turn,'userId'));
 	}
 
 	gameOver(reason) {
+		console.log(reason);
 		var self = this;
 		clearInterval(this.turnTimer);
+		
 		var winnerNames = "";
+
 		switch (reason) {
 			case "GAME_WON":
-				this.updatePlayerStatistics(this.playersHaveAllCards[0].userId, "ADD_WIN");
-				winnerNames += "\n"+this.playersHaveAllCards[0].name;
+				this.updatePlayerStatistics(this.getPlayersHaveAllCardsPropertyByIndex(0, 'userId'), "ADD_WIN");
+				winnerNames += "\n" + this.getPlayersHaveAllCardsPropertyByIndex(0, 'name');
 				break;
 			case "GAME_DRAW":
-				this.playersHaveAllCards.forEach( function(player){
-					self.updatePlayerStatistics(player.userId, "ADD_DRAWED");
-					winnerNames += "\n"+player.name;
+				this.playersHaveAllCards.forEach(function (player) {
+					console.log("PLAYER IN DRAWARRAY ->" + player.name)
+					self.updatePlayerStatistics(player.userId, "ADD_DRAW");
+					winnerNames += "\n" + player.name;
 				});
 				break;
 			case "NO_MORE_PLAYERS":
-				this.updatePlayerStatistics(this.players[0].userId, "ADD_WIN");
+				if(this.players.length > 0) {
+					this.updatePlayerStatistics(this.getPlayerPropertyByIndex(0, 'userId'), "ADD_WIN");
+				}
 				break;
 			case "NO_MORE_CARDS":
 				break;
+			case "EMPTY_ROOM":
+				break;
 		}
 
-		this.io.to(this.roomId).emit("gameOver", { reason: reason, winners: winnerNames})
+		this.io.to(this.roomId).emit("gameOver", { reason: reason, winners: winnerNames })
 
-		
-		this.gameOverCallback(this);
-
-		setTimeout( function() {
+		console.log("SETTING TIMEOUT")
+		setTimeout(function () {
 			self.io.to(self.roomId).emit("redirectToLobby");
-		},10000)	
+			self.gameOverCallback(self);
+		}, 7000)
+	}
+
+	getPlayerPropertyByIndex(index, property) {
+		if (this.players[index] != null) {
+			console.log("GetPlayerProperty->RETURNING:" + this.players[index][property])
+			return this.players[index][property]
+		} else {
+			console.log("ERR: Did not found player or property");
+			return null;
+		}
+	}
+
+	getPlayerByIndex(index) {
+		if (this.players[index] != null) {
+			return this.players[index]
+		} else {
+			console.log("ERR: Did not found player");
+			return null;
+		}
+	}
+
+	getPlayersHaveAllCardsPropertyByIndex(index, property) {
+		if (this.playersHaveAllCards[index] != null) {
+			console.log("Allcards->RETURNING:" + this.playersHaveAllCards[index][property])
+			return this.playersHaveAllCards[index][property];
+		} else {
+			console.log("ERR: Did not found player or property");
+			return null;
+		}
 	}
 
 	updatePlayerStatistics(userId, reason) {
-		userSchema.findOne({_id: userId}, function (err, user) {
-			console.error("Found user with id");
-			console.log(user);
-			switch(reason) {
+		userSchema.findOne({ _id: userId }, function (err, user) {
+			switch (reason) {
 				case "ADD_PLAYED":
-						if(user.played == null ) {
-							user.played = 0;	
-						}
-						user.played++
+					console.log("Adding played to " + user.displayname);
+					if (user.played == null) {
+						user.played = 0;
+					}
+					user.played++
 					break;
 				case "ADD_DRAW":
-						if(user.drawed == null ) {
-							user.drawed = 0;
-						}
-						user.drawed++
+					console.log("Adding drawed to " + user.displayname);
+					if (user.drawed == null) {
+						user.drawed = 0;
+					}
+					user.drawed++
 					break;
 				case "ADD_WIN":
-						if(user.wins == null ) {
-							user.wins = 0;
-						}
-						user.wins++;
+					console.log("Adding win to " + user.displayname);
+					if (user.wins == null) {
+						user.wins = 0;
+					}
+					user.wins++;
 					break;
 			}
 			user.save(function (err) {
-					if(err) {
-							console.error('ERROR!');
-					}
-				});
+				if (err) {
+					console.error('ERROR!');
+				}
+			});
 		});
 	}
-		
 }
 module.exports = GameRoom;
 

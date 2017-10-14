@@ -8,31 +8,29 @@
     </div>    
     <div class="container">
         <div id="statsSection" >
-            <h5>Played games: 0</h5>
-            <h5>Wins: 0</h5>
-            <h5>Drawed: 0</h5>
-            <h5>Win Ratio: N/A</h5>
+            <h5>Played games:<%= user.played ? user.played : 0 %></h5>
+            <h5>Wins: <%= user.wins ? user.wins : 0 %></h5>
+            <h5>Drawed: <%= user.drawed ? user.drawed : 0 %></h5>
         </div>
 
         <div id="actionSection" >
-        <p id="searchGameButton"><a href="/play" class="btn btn-primary green "><span class="fa fa"></span>   Search for game</a></p>
-        <p id="customGameButton"><a href="" class="btn btn-primary grey "><span class="fa fa"></span>   Create custom game (NOT Available)</a></p>
+        <p id="searchGameButton"><a href="/play?mode=match_making" class="btn btn-primary cyan darken-1 "><i class="tiny material-icons">search</i> Search Game</a></p>
+        <p id="customGameButton"><a href="/play?mode=create_private" class="btn btn-primary cyan darken-3 "><i class="tiny material-icons">add</i>  Create private game</a></p>
+        <p id="customGameButton"><a href="/play?mode=join_private" class="btn btn-primary cyan darken-4 "><i class="tiny material-icons">redo</i>   Join private game</a></p>
         </div>
         
         <div id="ladderSection">
-            <h5> Ladder </h5>
-            <ol> 
-                <li>Kiosken</li>
-                <li>Mongot</li>
-                <li>Kisok</li>
-                <li>Mong</li>
-                <li>Mong Ot</li>
-            </ol>
+            <h5> Most Wins </h5>
+            <ul
+                <% for(var i=0; i < topUsers.length; i++) { %>
+                <li> <%= i+1 %>. <%- topUsers[i].displayname %>: <%- topUsers[i].wins ? topUsers[i].wins : 0 %> </li>
+                <% } %>
+            </ul>
         </div>
-    </div>
-      
-
-        
+    </div>       
 </body>
+
+
+
  <% include footer %>
 </html>

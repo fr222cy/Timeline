@@ -1,7 +1,7 @@
 var LocalStrategy = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
 
-var User = require('../app/model/user');
+var User = require('../app/dao/user');
 var configAuth = require('./auth');
 
 
@@ -16,6 +16,43 @@ module.exports = function(passport){
             done(err, user);
         });
     });
+
+    passport.use('local-set-displayname', new LocalStrategy({
+        usernameField: 'displayname',
+        passwordField: 'password',
+        passReqToCallback : true
+    },
+    function(req, username, password, done) {
+        process.nextTick(function() {
+            displayname = username;
+            User.findOne({'displayName' : displayname}, function(err, alreadyExistingUser) { // Check if name already exists
+                if(err) {
+                    return done(err, false, req.flash('setDisplaynameMessage', 'Something went wrong! Please try again'));
+                }
+                if(alreadyExistingUser) {
+                    return done(err, false, req.flash('setDisplaynameMessage', 'That name is already taken!'));
+                } 
+                    var newDisplayname = displayname.replace(/[|&;$%@"<>()+,]/g, "");
+                    User.findOne({'_id' : req.user._id}, function(err, user) { //Get the user
+                        if(err) {
+                           return done(err, false, req.flash('setDisplaynameMessage', 'Something went wrong! Please try again')); 
+                        }
+                        if(user){
+                            user.displayname = newDisplayname; // set new name
+                            console.log("SET NEW NAME")
+                            user.save(function(err) { // save name
+                                if(err) {
+                                    return done(err, false, req.flash('setDisplaynameMessage', 'Something went wrong! Please try again'));
+                                }
+                                console.log("SAVED NEW NAME")
+                                return done(null, user);
+                            });
+                        }
+                    });
+                
+            });
+        })
+    }));
 
     passport.use('local-signup', new LocalStrategy({
         usernameField: 'username',

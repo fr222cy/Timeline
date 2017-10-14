@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [
     {
         "year": "630",
@@ -8200,3 +8201,68 @@
         "description": " Cuban dictator Fulgencio Batista tells his Cabinet he is fleeing the country"
     }
 ]
+=======
+{"_id":{"$oid":"58fa0313b412811dfce59f81"},"description":"Columbus found Murica","year":"1400"}
+{"_id":{"$oid":"58fa03b3b412811dfce59f84"},"description":"Aftonbladet was founded","year":"1879"}
+{"_id":{"$oid":"58fa03eeb412811dfce59f86"},"description":"Neil Armstrong took the first step on the moon","year":"1968"}
+{"_id":{"$oid":"58fb71a1d317bb3a78f0a260"},"description":"IKEA was founded by Ingvar Kamprad","year":"1943 "}
+{"_id":{"$oid":"58fb71f9d317bb3a78f0a261"},"description":"The first Commodore 64 was released","year":"1982"}
+{"_id":{"$oid":"58fb7219d317bb3a78f0a262"},"description":"The landmark television sitcom All in the Family, starring Carroll O'Connor as Archie Bunker, debuts on CBS","year":"1971"}
+{"_id":{"$oid":"58fb7233d317bb3a78f0a263"},"description":"José Antonio Remón Cantera, president of Panama, is assassinated at a race track in Panama City","year":"1955"}
+{"_id":{"$oid":"58fb7252d317bb3a78f0a264"},"description":" American Indian Wars – Battle of Wolf Mountain: Crazy Horse and his warriors fight their last battle with the United States Cavalry in Montana","year":"1877"}
+{"_id":{"$oid":"58fb728ed317bb3a78f0a265"},"description":"The Treaty of Prague ends the Austro-Prussian War. The Duchy of Limburg leaves the German Confederation","year":"1866"}
+{"_id":{"$oid":"58fb72a5d317bb3a78f0a266"},"description":"The Ottoman Empire agrees to Russia's annexation of the Crimea in the Treaty of Constantinople","year":"1784"}
+{"_id":{"$oid":"58fb72d6d317bb3a78f0a267"},"description":"The first successful insulin treatment of diabetes is made, by Frederick Banting in Toronto","year":"1922"}
+{"_id":{"$oid":"58fb7304d317bb3a78f0a269"},"description":"The Hollywood Sign is inaugurated in California (originally reading Hollywoodland).","year":"1923"}
+{"_id":{"$oid":"58fb733ed317bb3a78f0a26b"},"description":" Lenin is buried in Lenin's Mausoleum in Moscow's Red Square","year":"1924"}
+{"_id":{"$oid":"58fb739cd317bb3a78f0a26d"},"description":"Felix Hoffmann patents aspirin and Bayer registers its name as a trademark","year":"1899"}
+{"_id":{"$oid":"58fb73bed317bb3a78f0a26e"},"description":"Real Madrid C.F. is founded as Madrid Football Club.","year":"1902"}
+{"_id":{"$oid":"597cf861acbe3a2960cff03a"},"description":"The reign of Peter the Great officially begins in Russia.","year":"1682"}
+{"_id":{"$oid":"597cf8afacbe3a2960cff03b"},"description":"The Swedish city of Karlskrona is founded, as the Royal Swedish Navy relocates there.","year":"1680"}
+{"_id":{"$oid":"597cf8dfacbe3a2960cff03c"},"description":"European explorers discover Niagara Falls.","year":"1679"}
+{"_id":{"$oid":"597cf93bacbe3a2960cff03d"},"description":"New Zealand becomes a British colony","year":"1841"}
+{"_id":{"$oid":"597cfa2cacbe3a2960cff03e"},"description":"The U.S. invades Cambodia to hunt out the Viet Cong; widespread, large antiwar protests occur in the U.S.","year":"1970"}
+{"_id":{"$oid":"597cfaa7acbe3a2960cff03f"},"description":"U.S. President Richard Nixon orders the development of a Space Shuttle program.","year":"1972"}
+{"_id":{"$oid":"597cfaddacbe3a2960cff040"},"description":"Jaws is released in theaters and becomes a popular summer hit, setting the standard for Hollywood blockbusters for years to come.","year":"1975"}
+{"_id":{"$oid":"597cfb0bacbe3a2960cff041"},"description":"The punk rock group the Ramones release their first self-titled album.","year":"1976"}
+{"_id":{"$oid":"597cfb4bacbe3a2960cff042"},"description":"200,000 protesters march through the streets of San Francisco, protesting Anita Bryant's anti-gay remarks and the murder of Robert Hillsborough.","year":"1977"}
+{"_id":{"$oid":"597cfba1acbe3a2960cff043"},"description":"The 50th Academy Awards are held at the Dorothy Chandler Pavilion in Los Angeles with Annie Hall winning Best Picture.","year":"1978"}
+{"_id":{"$oid":"597cfbf8acbe3a2960cff044"},"description":"The Wall, a rock opera and concept album by Pink Floyd, is first released.","year":"1979"}
+{"_id":{"$oid":"597cfc42acbe3a2960cff045"},"description":"The first 24-hour news channel, Cable News Network (CNN) is launched.","year":"1980"}
+{"_id":{"$oid":"597cfc5facbe3a2960cff046"},"description":"The first London Marathon starts with 7,500 runners.","year":"1981"}
+{"_id":{"$oid":"597cfc77acbe3a2960cff047"},"description":"The 3D printer is invented by Chuck Hull","year":"1983"}
+{"_id":{"$oid":"597cfca3acbe3a2960cff048"},"description":"John Turner becomes Canada's 17th prime minister.","year":"1984"}
+{"_id":{"$oid":"597cfd0eacbe3a2960cff049"},"description":"American singer, songwriter and actor Ricky Nelson dies in a plane crash in De Kalb, Texas.","year":"1985"}
+{"_id":{"$oid":"597cfd41acbe3a2960cff04a"},"description":"Spain and Portugal enter the European Community, which later becomes the European Union.","year":"1986"}
+{"_id":{"$oid":"597cfd7eacbe3a2960cff04b"},"description":"Microsoft releases Windows 2.0.","year":"1987"}
+{"_id":{"$oid":"597cfddcacbe3a2960cff04c"},"description":"The first McDonald's restaurant in a country run by a Communist party opens in Belgrade, Yugoslavia. ","year":"1988"}
+{"_id":{"$oid":"597cfe31acbe3a2960cff04d"},"description":"Nintendo releases the Game Boy portable video game system in North America.","year":"1989"}
+{"_id":{"$oid":"597cfe8cacbe3a2960cff04e"},"description":"The first known web page is written.","year":"1990"}
+{"_id":{"$oid":"597cff0dacbe3a2960cff04f"},"description":"Kazakhstan declares its independence from the Soviet Union.","year":"1991"}
+{"_id":{"$oid":"597cff36acbe3a2960cff050"},"description":"Lithuania introduces its new currency, the talonas.","year":"1992"}
+{"_id":{"$oid":"597cffaaacbe3a2960cff051"},"description":"NASA loses radio contact with the Mars Observer orbiter 3 days before the spacecraft is scheduled to enter orbit around Mars.","year":"1993"}
+{"_id":{"$oid":"597d0002acbe3a2960cff052"},"description":"The first passengers travel through the Channel Tunnel between U.K and France.","year":"1994"}
+{"_id":{"$oid":"597d003eacbe3a2960cff053"},"description":"U.S. astronaut Norman Thagard breaks NASA's space endurance record of 14 days, 1 hour and 16 minutes, aboard the Russian space station Mir.","year":"1995"}
+{"_id":{"$oid":"597d00c4acbe3a2960cff054"},"description":"The horror film Scream, comes out in theaters.","year":"1996"}
+{"_id":{"$oid":"597d00e6acbe3a2960cff055"},"description":"Swedish musician Ted Gardestad commits suicide by jumping in front of a train (he is found dead later that morning).","year":"1997"}
+{"_id":{"$oid":"597d0105acbe3a2960cff056"},"description":"Titanic becomes the first film to gross US$1 billion","year":"1998"}
+{"_id":{"$oid":"597d018eacbe3a2960cff058"},"description":"The currency \"euro\" is established.","year":"1999"}
+{"_id":{"$oid":"597d01d7acbe3a2960cff059"},"description":"The Oresund Bridge between Denmark and Sweden is officially opened for traffic.","year":"2000"}
+{"_id":{"$oid":"597d02e0acbe3a2960cff05a"},"description":"The former Beatles member George Harrison dies.","year":"2001"}
+{"_id":{"$oid":"597d035cacbe3a2960cff05b"},"description":"Sam Raimi's film \"Spider-Man\" hits the big screen and become the highest grossing film all time. Also making a superhero film reach successful at the box office.","year":"2002"}
+{"_id":{"$oid":"597d0397acbe3a2960cff05c"},"description":"Saddam Hussein, former President of Iraq, is captured in the small town of Ad-Dawr by the U.S. Army","year":"2003"}
+{"_id":{"$oid":"597d0427acbe3a2960cff05d"},"description":"The Summer Olympics are held in Athens, Greece.","year":"2004"}
+{"_id":{"$oid":"597d0470acbe3a2960cff05e"},"description":"Pope John Paul II dies; over 4 million people travel to the Vatican to mourn him","year":"2005"}
+{"_id":{"$oid":"597d04b4acbe3a2960cff05f"},"description":"North Korea claims to have conducted its first-ever nuclear test.","year":"2006"}
+{"_id":{"$oid":"597d04eeacbe3a2960cff060"},"description":"The Pablo Picasso painting Portrait of Suzanne Bloch is stolen from the São Paulo Museum of Art.","year":"2007"}
+{"_id":{"$oid":"597d0541acbe3a2960cff061"},"description":"Iran opens its first space center and launches a rocket into space.","year":"2008"}
+{"_id":{"$oid":"597d0569acbe3a2960cff062"},"description":"Astronomers discover GJ 1214 b, the first-known exoplanet on which water could exist","year":"2009"}
+{"_id":{"$oid":"597d058eacbe3a2960cff063"},"description":"The tallest man-made structure to date, the Burj Khalifa in Dubai, is officially opened.","year":"2010"}
+{"_id":{"$oid":"597d05f3acbe3a2960cff064"},"description":"Date selected by the UN as the symbolic date when global population reaches seven billion.","year":"2011"}
+{"_id":{"$oid":"597d06adacbe3a2960cff065"},"description":"The actor Michael Clarke Duncan dies of an heart attack","year":"2012"}
+{"_id":{"$oid":"597d06f3acbe3a2960cff066"},"description":"Croatia becomes the 28th member of the European Union","year":"2013"}
+{"_id":{"$oid":"597d0709acbe3a2960cff067"},"description":"The Ebola virus epidemic in West Africa begins, infecting at least 28,616 people and killing at least 11,310 people, the most severe both in terms of numbers of infections and casualties.","year":"2014"}
+{"_id":{"$oid":"597d077eacbe3a2960cff068"},"description":"Ireland votes to legalize same-sex marriage, becoming the first country to legalize same-sex marriage by popular vote.","year":"2015"}
+{"_id":{"$oid":"597d07f7acbe3a2960cff069"},"description":"The former president of Cuba, Fidel Castro, dies at age 90.","year":"2016"}
+{"_id":{"$oid":"597d08b7acbe3a2960cff06a"},"description":"The american singer and musician, Chuck Berry, dies at age 90.","year":"2017"}
+>>>>>>> 7b38f902c9f807e07ac150456e36db70d72e5495

@@ -19,8 +19,8 @@ html{
 
 body{
   color: white;
-  background-color: black;
-  /*background-image: url("../images/background.jpg");*/
+  /*background-color: black;*/
+  background-image: url("../images/background.jpg");
   height:100%;
 }
 
@@ -163,8 +163,6 @@ footer{
   background-color:peru;
 }
 
-
-
 #roundInfo {
   position:absolute;
   bottom:23%;
@@ -174,7 +172,6 @@ footer{
   background-color:#4caf50 ;
 }
 
- 
 #cardPile {
   position: relative;
   margin-right: 30%;
@@ -205,7 +202,6 @@ footer{
     position: absolute;
     top: 30%;
     margin-left: 33%;
-    
 }
 
 #nextTurnButton {
@@ -221,8 +217,6 @@ footer{
   color:black;
 }
 
-
-
 /*---LOCKED CARDS---*/
  #cardSlots .card {
    text-align: center;
@@ -236,7 +230,6 @@ footer{
     z-index: 2;
  }
 
- 
  #cardYear{
     color:black;
     float:left;
@@ -300,9 +293,34 @@ footer{
 .determinate {
     z-index: 1;
 }
-    
-  
 
+.smallFormDiv {
+  width: 20%;
+}
+.smallFormDiv label {
+  font-size: 20px;
+  color:white;
+}
+
+#privateRoomContainer {
+  margin-left:30%;
+  margin-right:30%;
+}
+#joinRoomDiv {
+  width:30%;
+}
+
+label {
+  color: white;
+}
+  
+.hidden {
+  display: none;
+}
+
+#privateRoomList {
+  width:50%;
+}
 
 
 

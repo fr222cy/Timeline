@@ -1,68 +1,43 @@
-<!doctype html>
-<html>
-<% include header %>
-<body>
-  <% include navbar %>
+<div hidden id="gameArea" class="center">
+  <div id="gameInfo" class="green left">
+    <h5 id="roomId"></h5>
+    <h5 id="round"></h5>
+    <h5 id="timeLeft"></h5>
 
-        <div id="queueDiv" class="center">
-          <span class="center"><img class="center" src="public/images/loading.gif"/></span>
-          <p id="leaveQueueButton" class="center"><a href="/lobby" class="btn"><span class="fa fa"></span> Leave Queue</a></p>
-          <h3 id="peopleLeft"></h3>
-          <h5 id="info">In Matchmaking</h5>
-          <h5 id="inqueue"></h5>
-        </div>
+  </div>
+  <div id="notificationArea">
 
+  </div>
 
-        <div hidden id="gameArea" class="center" >
-          <div id="gameInfo" class="green left">
-            <h5 id="roomId"></h5>
-            <h5 id="round"></h5> 
-            <h5 id="timeLeft"></h5>
-                  
-          </div>
-          <div id="notificationArea">
-              
-          </div>
+  <div id="choiceArea">
+    <a id="nextTurnButton" class="waves-effect green btn-large">Save and end turn!</a>
+    <a id="getCardButton" class="waves-effect amber btn-large">Pick Card!</a>
+  </div>
+  <div id="roundInfo">
+    <h5 id="turn"></h5>
+  </div>
 
-          <div id="choiceArea">
-            <a id="nextTurnButton" class="waves-effect green btn-large">Save and end turn!</a>
-            <a id="getCardButton" class="waves-effect amber btn-large">Pick Card!</a>
-          </div>
-        <div id="roundInfo">  
-              <h5 id="turn"></h5>   
-        </div>
+  <div id="gameChat" class="green left">
+    <div id="gameChatArea">
+      <ul class="messages">
 
-          <div id="gameChat" class="green left">
-            <div id="gameChatArea" >
-              <ul class="messages">
-              
-              </ul>
-            </div>
-            <input id="gameChatInput" type="text" placeholder="Type to chat!">
-          </div>
-          <h5 id="gametime"></h5>    
-          <div id="cardPile">
-            
+      </ul>
+    </div>
+    <input id="gameChatInput" type="text" placeholder="Type to chat!">
+  </div>
+  <h5 id="gametime"></h5>
+  <div id="cardPile">
 
-          </div> 
-          <div id="cardGenerator"></div>
-          <div class="progress">
-           
-            <div class="determinate" style="width: 100%; z-index: 1 "></div>
-             <p id="progressTime"></p>
-          </div>   
-          <div id="cardSlots">        
-          </div>
-        </div>
-           
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>  
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>  
-    <script src="/public/javascripts/jquery.textfill.min.js"></script>
-    <script src="/public/javascripts/jquery.blockUI.js"></script>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/public/javascripts/gameScript.js"></script>
-    <div class='name' data-name-value='<%= user.facebook.name %>'></div>
-    <div class='id' data-id-value='<%= user.id %>'></div>
-</body>
-</html>
+  </div>
+  <div id="cardGenerator"></div>
+  <div class="progress">
+
+    <div class="determinate" style="width: 100%; z-index: 1 "></div>
+    <p id="progressTime"></p>
+  </div>
+  <div id="cardSlots">
+  </div>
+</div>
+
+<script src="/public/js/game.js"></script>
+
