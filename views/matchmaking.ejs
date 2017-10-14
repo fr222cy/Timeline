@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<% include header %>
+<body>
+  <% include navbar %>
+
+        <div id="queueDiv" class="center">
+          <span class="center"><img class="center" src="public/images/loading.gif"/></span>
+          <p id="leaveQueueButton" class="center"><a href="/lobby" class="btn"><span class="fa fa"></span> Leave Queue</a></p>
+          <h3 id="waitNotification"></h3>
+          <h5 id="info">In Matchmaking</h5>
+          <h5 id="inqueue"></h5>
+        </div>
+
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="/public/js/jquery.textfill.min.js"></script>
+  <script src="/public/js/jquery.blockUI.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+  <div class='name' data-name-value='<%= user.displayname %>'></div>
+  <div class='id' data-id-value='<%= user.id %>'></div>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <% include game %>
+  <script src="/public/js/matchmaking.js"></script>
+
+</body>
+</html> 

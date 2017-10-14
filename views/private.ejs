@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<% include header %>
+<body>
+  <% include navbar %>
+      
+  <div  id="privateRoomContainer">
+    <h5 id="privateRoomErr"></h5>
+
+    <div id="privateRoomDiv">
+      <h5 id="generatedRoomId"></h5> 
+      <h5 id="privateRoomInfo"></h5>
+      <h3 id="waitNotification"></h3>
+      <div id="playersInRoomDiv"></div
+      <p id="leaveRoomButton" class="center"> 
+        <button type="submit" id="startPrivateGameButton" class="btn small green btn-lg">Start Game</button>
+        <a href="/lobby" class="btn"><span class="fa fa"></span>Leave
+        </a>
+      </p>
+      
+    </div>
+      
+    <div  id="joinRoomDiv" class="col s6 input" >
+      <form id="joinRoomForm">
+          <label for="inputJoinRoom">Enter a room id</label>
+          <input type="text" id="inputJoinRoom" class="form"/>
+          <button type="submit" class="btn small green btn-lg">Join room</button>
+      </form>
+    </div>
+  </div>
+    
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="/public/js/jquery.textfill.min.js"></script>
+  <script src="/public/js/jquery.blockUI.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  
+  <div class='name' data-name-value='<%= user.displayname %>'></div>
+  <div class='id' data-id-value='<%= user.id %>'></div>
+  <div class='isLeader' data-id-value='<%= isLeader %>'></div>
+  <% include game %>
+  <script src="/public/js/privateGame.js"></script>
+  
+  
+</body>
+</html> 

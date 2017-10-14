@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<% include header %>
+<body>
+
+  <div class="section no-pad-bot" id="index-banner">   
+    <div class="container">
+      <h2>Welcome to Timeline! </h2>
+       <% if (message.length > 0) { %>
+		  <div><%= message %></div>
+	    <% } %>
+    
+      <div class="smallFormDiv">
+        <form action="/newUser" method="post">
+          <label>Enter your display name</label>
+          <input type="text" name="displayname">
+          <button type="submit" class="btn btn-warning green btn-lg">Proceed</button>
+        </form>
+        
+      </div>
+    </div>
+ </div>
+<% include footer %>
+</body>
+
+</html>
