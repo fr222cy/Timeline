@@ -48,6 +48,7 @@ $('document').ready(function () {
 
   socket.on('updatePlayerList', function (data) {
     $('#playersInRoomDiv').html(data.tableHtml);
+    playPlayerJoinSound();
   });
 
   socket.on('gameReady', function (data) {

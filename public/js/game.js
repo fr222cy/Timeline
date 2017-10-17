@@ -60,6 +60,7 @@
 				enableChoice();
 				$("#turn").html("Its your turn");
 				generateCardDropZone(data.playersCards, true);
+				playYourTurnSound();
 			} else {
 				$("#turn").html("You are watching " + data.nameOfTurn);
 				disableChoice();
@@ -216,7 +217,7 @@
 	}
 
 	function generateCard(card, isPlayersTurn) {
-		console.log(card);
+		playCardDrawSound();
 		var dragOptions = {
 			containment: '#gameArea',
 			stack: '#cardPile div',
@@ -269,7 +270,6 @@
 				draggedCard.draggable(draggedOptions);
 				draggedCard.find("#cardYear").html(year)
 
-
 				//draggedCard.data("slotNum", slotNumber.replace("slot", ""));
 				if (!isCardLocked) {
 					enableChoice();
@@ -307,45 +307,49 @@
 	}
 
 	function animateFailure(cardObject, pos) {
-
+		
 		if (pos == null) { // if current players turn (ugly)
 			$(".card").each(function () {
 				var card = $(this);
 				if (!card.data("isLocked")) {
 					card.css({ "backgroundColor": "#ff5722 " })
-					card.fadeOut(500, function () {
+					playWrongSlotSound();
+					card.fadeOut(2500, function () {
 						card.remove();
 					});
 				}
 			});
 		} else {
 			cardObject.animate(pos, 1000, "swing", function () {
+				playWrongSlotSound();
 				$(".card").each(function () {
 					var card = $(this);
 					if (!card.data("isLocked")) {
 						card.css({ "backgroundColor": "#ff5722 " })
-						card.fadeOut(500, function () {
+						card.fadeOut(2500, function () {
 							card.remove();
 						});
 					}
 				});
 
 				cardObject.css({ "backgroundColor": "#ff5722 " })
-			}).animate({ top: -5 + "%" }, 1000, "swing", function () {
+			}).animate({ top: -1 + "%" }, 2500, "swing", function () {
 				cardObject.remove();
 			});
 		}
 	}
 
 	function animateSuccess(cardObject, pos) {
-
+	
 		if (pos == null) {//If current players turn
 			if (!cardObject.data("isLocked")) {
+				playCorrectSlotSound()
 				cardObject.css({ "backgroundColor": "yellow" })
 			}
 		} else {//If opponent turn
 			cardObject.animate(pos, 1000, "swing", function () {
 				if (!cardObject.data("isLocked")) {
+					playCorrectSlotSound()
 					cardObject.css({ "backgroundColor": "yellow" })
 				}
 			});

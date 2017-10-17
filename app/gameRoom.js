@@ -60,14 +60,14 @@ class GameRoom {
 							self.playersHaveAllCards.push(self.getPlayerByIndex(self.turn));
 							self.lastRound = true;
 							client.broadcast.to(self.roomId).emit("notification", { message: "LAST ROUND! " + self.getPlayerPropertyByIndex(self.turn,'name') + " has 10 cards locked! " })
-							self.nextTurn(2000);
+							self.nextTurn(3500);
 						}
 					}
 					else {
 						if (!card.isLocked) {
 							client.broadcast.to(self.roomId).emit("cardMovement", { cardId: data.cardId, slot: data.slotNum, success: false });
 							next(false, false, card.year, card.isDropped);
-							self.nextTurn(2000);
+							self.nextTurn(3500);
 						}
 						else {
 							next(false, true, null, card.isDropped);
