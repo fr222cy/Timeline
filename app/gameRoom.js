@@ -125,8 +125,6 @@ class GameRoom {
 						return;
 					}
 					
-
-					console.log("activePlayers LENGTH BEFORE : " + self.activePlayers.length)
 					if (isUserTurn) {
 						if (self.turn + 1 > self.activePlayers.length - 1) {
 							self.round++;
@@ -225,8 +223,7 @@ class GameRoom {
 				self.gameOver("EMPTY_ROOM");
 			}
 			if (timeleft === 0) {
-				console.log("Room id:" + self.roomId)
-				console.log("INSIDE COUNTDOWN : activePlayers ->" + self.activePlayers.length)
+
 				self.io.to(self.getPlayerPropertyByIndex(self.turn,'socket').id).emit("forceNextTurn");
 				self.nextTurn(3000);
 				self.notifyPlayers("Time ran out! Switching to next player")
@@ -380,7 +377,6 @@ class GameRoom {
 				break;
 			case "GAME_DRAW":
 				this.playersHaveAllCards.forEach(function (player) {
-					console.log("PLAYER IN DRAWARRAY ->" + player.name)
 					updatePlayerStatistics(player.userId, "ADD_DRAW");
 					winnerNames += "\n" + player.name;
 				});
@@ -398,7 +394,6 @@ class GameRoom {
 
 		this.io.to(this.roomId).emit("gameOver", { reason: reason, winners: winnerNames })
 
-		console.log("SETTING TIMEOUT")
 		setTimeout(function () {
 			self.io.to(self.roomId).emit("redirectToLobby");
 			self.gameOverCallback(self);
@@ -407,7 +402,6 @@ class GameRoom {
 
 	getPlayerPropertyByIndex(index, property) {
 		if (this.activePlayers[index] != null) {
-			console.log("GetPlayerProperty->RETURNING:" + this.activePlayers[index][property])
 			return this.activePlayers[index][property]
 		} else {
 			console.log("ERR: Did not found player or property");
@@ -426,7 +420,6 @@ class GameRoom {
 
 	getPlayersHaveAllCardsPropertyByIndex(index, property) {
 		if (this.playersHaveAllCards[index] != null) {
-			console.log("Allcards->RETURNING:" + this.playersHaveAllCards[index][property])
 			return this.playersHaveAllCards[index][property];
 		} else {
 			console.log("ERR: Did not found player or property");
