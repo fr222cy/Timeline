@@ -55,13 +55,8 @@ module.exports = function (app, passport, io) {
 			res.redirect('/lobby');
 		});
 
-	app.get('/newUser', isLoggedIn, function (req, res) {
-			
-	res.render('setName.ejs', { message: req.flash('setDisplaynameMessage') });
-			
-		
-
-
+	app.get('/newUser', isLoggedIn, function (req, res) {		
+		res.render('setName.ejs', { message: req.flash('setDisplaynameMessage') });
 	});
 
 	app.post('/newUser', function (req, res) {

@@ -11,6 +11,17 @@
             <h5>Played games:<%= user.played ? user.played : 0 %></h5>
             <h5>Wins: <%= user.wins ? user.wins : 0 %></h5>
             <h5>Drawed: <%= user.drawed ? user.drawed : 0 %></h5>
+            <%if(user.ratingChange == 0) { %>
+            <h5>Rating: <%= user.rating ? user.rating : N/A %></h5>
+            <%} else if(user.ratingChange > 0) { %>
+            <h5>Rating: <%= user.rating ? user.rating : N/A %><span style="color:green;">(+<%= user.ratingChange %>)</span></h5>
+            <%  %>
+             <%} else if(user.ratingChange < 0) { %>
+            <h5>Rating: <%= user.rating ? user.rating : N/A %><span style="color:darkRed;">(<%= user.ratingChange %>)</span></h5>
+            <% } %>
+
+   
+
         </div>
 
         <div id="actionSection" >
@@ -20,10 +31,10 @@
         </div>
         
         <div id="ladderSection">
-            <h5> Most Wins </h5>
+            <h5> Top 5  </h5>
             <ul
                 <% for(var i=0; i < topUsers.length; i++) { %>
-                <li> <%= i+1 %>. <%- topUsers[i].displayname %>: <%- topUsers[i].wins ? topUsers[i].wins : 0 %> </li>
+                <li> <%= i+1 %>. <%- topUsers[i].displayname %>: <%- topUsers[i].rating ? topUsers[i].rating : N/A %> </li>
                 <% } %>
             </ul>
         </div>

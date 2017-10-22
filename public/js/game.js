@@ -172,6 +172,7 @@
 		});
 
 		$("#gameChatInput").keyup(function (e) {
+			console.log(name);
 			if (e.keyCode == 13) {
 				var text = $("#gameChatInput").val();
 				if (text) {

@@ -15,7 +15,9 @@ var userSchema = mongoose.Schema({
     displayname: String,
     wins: Number,
     drawed: Number,
-    played: Number
+    played: Number,
+    rating: Number,
+    ratingChange: Number,
 });
 
 userSchema.methods.generateHash = function(password){

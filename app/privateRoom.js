@@ -1,3 +1,5 @@
+var getPlayerElo = require('./dbProcs/getPlayerElo.js');
+
 class PrivateRoom {
   constructor(roomId, io, callback) {
 		this.roomId = roomId;
@@ -11,8 +13,7 @@ class PrivateRoom {
     if(this.players.length >= this.maxPlayers) {
       cb(false);
     }
-    this.players.push(player);
-   
+
     player.socket.join(this.roomId);
 
     player.socket.on('disconnect', () => {
@@ -22,9 +23,23 @@ class PrivateRoom {
         this.callback(this);
       }
     });
-  
-    this.updatePlayerInRoomList();
-    cb(true);
+
+    this.getPlayerEloDb(player.userId,(elo) => {
+      player.rating = elo;
+      this.players.push(player);
+      this.updatePlayerInRoomList();
+      cb(true);
+    })
+  }
+
+  getPlayerEloDb(userId, next) {
+    getPlayerElo(userId, function(err, elo) {
+      if(err) {
+        next("N/A");
+        return;
+      }
+      next(elo);
+    }); 
   }
 
   getPlayerByUserId(userId) {
@@ -49,7 +64,7 @@ class PrivateRoom {
       return;
     }
     next(true, this.players, this.roomId)
-    
+    this.callback(this);//remove private room
   }
 
   //HTML-string for printing current players in queue.
@@ -60,9 +75,9 @@ class PrivateRoom {
     tableHtml += "<tr> <th> Name </th> <th> Rating </th> </tr>";
     players.forEach(function(player, index) {
       if(index == 0) { //leader
-         tableHtml += "<tr> <td>" +player.name+ " (Leader) </td> <td> N/A </td> </tr>";
+         tableHtml += "<tr> <td>" +player.name+ " (Leader) </td> <td> "+player.rating+" </td> </tr>";
       }else {
-        tableHtml += "<tr> <td>" +player.name+ " </td> <td> N/A </td> </tr>";
+        tableHtml += "<tr> <td>" +player.name+ " </td> <td> "+player.rating+" </td> </tr>";
       }
     });
     tableHtml += "</table>";
@@ -70,6 +85,6 @@ class PrivateRoom {
     this.io.to(this.roomId).emit('updatePlayerList', {
 			tableHtml : tableHtml
 		});
-  }
+  }  
 }
 module.exports = PrivateRoom;
