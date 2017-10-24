@@ -364,20 +364,25 @@ class GameRoom {
 	gameOver(reason) {
 		clearInterval(this.turnTimer);
 		let winnerNames = "";
-		this.doEloUpdate();
+		
 		switch (reason) {
 			case "GAME_WON":
+				this.doEloUpdate();
 				updatePlayerStatistics(this.getPlayersHaveAllCardsPropertyByIndex(0, 'userId'), "ADD_WIN");
 				winnerNames += "\n" + this.getPlayersHaveAllCardsPropertyByIndex(0, 'name');
+				
 				break;
 			case "GAME_DRAW":
+				this.doEloUpdate();
 				this.playersHaveAllCards.forEach( (player) => {
 					updatePlayerStatistics(player.userId, "ADD_DRAW");
 					winnerNames += "\n" + player.name;
 				});
+				
 				break;
 			case "NO_MORE_PLAYERS":
 				if(this.activePlayers.length > 0) {
+					this.doEloUpdate();
 					updatePlayerStatistics(this.getPlayerPropertyByIndex(0, 'userId'), "ADD_WIN");
 				}
 				break;
