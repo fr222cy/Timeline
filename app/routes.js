@@ -22,7 +22,7 @@ module.exports = function (app, passport, io) {
 			}
 		});
 
-		User.find({}).sort({ wins: -1 }).limit(5).exec(function (err, topUsersResult) {
+		User.find({}).sort({ rating: -1 }).limit(5).exec(function (err, topUsersResult) {
 			if (err) {
 				topUsersResult = "Could not fetch ladder data"
 			}
@@ -60,12 +60,13 @@ module.exports = function (app, passport, io) {
 	});
 
 	app.post('/newUser', function (req, res) {
-		addDisplayName(req,res, function (isValid) {
+		addDisplayName(req, (isValid) => {
+			console.log("HEJ!")
 			if (!isValid) {
-				res.redirect("/newUser");
-				return;
+				res.render('setName.ejs', { message: req.flash('setDisplaynameMessage') });
+			}else {
+				res.redirect('/lobby');
 			}
-			res.redirect("/lobby");
 		});
 	});
 

@@ -123,7 +123,7 @@
 			
 			var gameOverTitle = "";
 			var gameOverDesc = "";
-
+			console.log(data.reason);
 			switch(data.reason) {
 			case "GAME_WON":
 				gameOverTitle = "WE HAVE A WINNER!";

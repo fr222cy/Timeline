@@ -1,15 +1,15 @@
-var Card = require('./domain/card.js');
-var cardSchema = require('./dao/cardSchema.js');
-var userSchema = require('./dao/user.js');
-var updatePlayerStatistics = require('./dbProcs/updatePlayerStatistics.js')
-var calculateElo = require('./misc/calculateElo.js');
-var async = require('async');
+let Card = require('./domain/card.js');
+let cardSchema = require('./dao/cardSchema.js');
+let userSchema = require('./dao/user.js');
+let updatePlayerStatistics = require('./dbProcs/updatePlayerStatistics.js')
+let EloHandler = require('./misc/eloHandler.js');
+let async = require('async');
 
 class GameRoom {
 	constructor(roomId, activePlayers, io, gameOverCallback) {
 		this.roomId = roomId;
 		this.activePlayers = activePlayers;
-		this.playersThatHaveLeft = [];
+		this.initialAmountOfPlayers;
 		this.io = io;
 		this.timeLimit = 40; //seconds
 		this.round = 1;
@@ -26,20 +26,21 @@ class GameRoom {
 		this.gameOverCallback = gameOverCallback;
 		this.playersHaveAllCards = [];
 		this.lastRound = false;
+		this.eloHandler;
 	}
 
 	InitializeGame() {
-		var self = this;
-		this.activePlayers.forEach(function (player) {
-			var client = player.socket;
-			client.join(self.roomId);
+		this.eloHandler = new EloHandler(this.activePlayers);
+		this.initialAmountOfPlayers = this.activePlayers.length;
+		this.activePlayers.forEach((player) => {
+			let client = player.socket;
+			client.join(this.roomId);
 			updatePlayerStatistics(player.userId, "ADD_PLAYED");
 			// Give player a random reference card.
-			self.getRandomCard(function (card) {
+			this.getRandomCard((card) => {
 				card.lock();
 				card.isDropped = true;
-				self.addCardToSlot(5, card, player, function (couldAddCard) {
-
+				this.addCardToSlot(5, card, player, (couldAddCard) => {
 				});
 			});
 
@@ -48,48 +49,48 @@ class GameRoom {
 			*/
 			//Data     -> slotNum, userId, cardId
 			//Movecard -> next(isValidDrop, isCardLocked, cardYear, isCardDropped)
-			client.on('moveCard', function (data, next) {
-				var oldCards = self.getPlayerPropertyByIndex(self.turn,'cards').slice(0);
-				var card = self.getCardById(data.cardId);
+			client.on('moveCard', (data, next) => {
+				let oldCards = this.getPlayerPropertyByIndex(this.turn,'cards').slice(0);
+				let card = this.getCardById(data.cardId);
 
-				self.isValidDrop(data, card, function (isValid) {
+				this.isValidDrop(data, card, (isValid) => {
 					if (isValid) {
-						client.broadcast.to(self.roomId).emit("cardMovement", { cardId: data.cardId, slot: data.slotNum, success: true });
+						client.broadcast.to(this.roomId).emit("cardMovement", { cardId: data.cardId, slot: data.slotNum, success: true });
 						next(true, null, card.year, card.isDropped);
 						card.isDropped = true;
-						var cards = self.getPlayerPropertyByIndex(self.turn,'cards').slice(0);
-						cards = cards.filter(self.removeEmptySlots);
+						let cards = this.getPlayerPropertyByIndex(this.turn,'cards').slice(0);
+						cards = cards.filter(this.removeEmptySlots);
 						if (cards.length == 10) {
-							self.playersHaveAllCards.push(self.getPlayerByIndex(self.turn));
-							self.lastRound = true;
-							client.broadcast.to(self.roomId).emit("notification", { message: "LAST ROUND! " + self.getPlayerPropertyByIndex(self.turn,'name') + " has 10 cards locked! " })
-							self.nextTurn(3500);
+							this.playersHaveAllCards.push(this.getPlayerByIndex(this.turn));
+							this.lastRound = true;
+							client.broadcast.to(this.roomId).emit("notification", { message: "LAST ROUND! " + this.getPlayerPropertyByIndex(this.turn,'name') + " has 10 cards locked! " })
+							this.nextTurn(3500);
 						}
 					}
 					else {
 						if (!card.isLocked) {
-							client.broadcast.to(self.roomId).emit("cardMovement", { cardId: data.cardId, slot: data.slotNum, success: false });
+							client.broadcast.to(this.roomId).emit("cardMovement", { cardId: data.cardId, slot: data.slotNum, success: false });
 							next(false, false, card.year, card.isDropped);
-							self.nextTurn(3500);
+							this.nextTurn(3500);
 						}
 						else {
 							next(false, true, null, card.isDropped);
-							self.getPlayerPropertyByIndex(self.turn,'cards') = oldCards;
+							this.getPlayerPropertyByIndex(this.turn,'cards') = oldCards;
 						}
 					}
 				});
 			});
 
-			client.on('getCard', function (data, next) {
-				self.isUsersTurn(data.userId, function (isUserTurn) {
+			client.on('getCard', (data, next) => {
+				this.isUsersTurn(data.userId, (isUserTurn) => {
 
 					if (isUserTurn) {
-						client.broadcast.to(self.roomId).emit("notification", { message: self.getPlayerPropertyByIndex(self.turn, 'name')+ " took a card!" })
-						self.getRandomCard(function (card) {
+						client.broadcast.to(this.roomId).emit("notification", { message: this.getPlayerPropertyByIndex(this.turn, 'name')+ " took a card!" })
+						this.getRandomCard( (card) => {
 
-							client.broadcast.to(self.roomId).emit("newCard", { card: card })
-							self.startCountdown();
-							var year = card.year;
+							client.broadcast.to(this.roomId).emit("newCard", { card: card })
+							this.startCountdown();
+							let year = card.year;
 							card.year = "?";
 							next(card);
 							card.year = year;
@@ -98,41 +99,43 @@ class GameRoom {
 				});
 			});
 
-			client.on('nextTurn', function (data) {
-				self.isUsersTurn(data.userId, function (isUserTurn) {
+			client.on('nextTurn', (data) =>  {
+				this.isUsersTurn(data.userId, (isUserTurn) => {
 					if (isUserTurn) {
-						client.broadcast.to(self.roomId).emit("notification", { message: self.getPlayerPropertyByIndex(self.turn,'name') + " locked the timeline!", lock: true });
-						self.nextTurn(3000);
+						client.broadcast.to(this.roomId).emit("notification", { message: this.getPlayerPropertyByIndex(this.turn,'name') + " locked the timeline!", lock: true });
+						this.nextTurn(3000);
 					}
 				});
 			});
 
-			client.on('newMessage', function (data) {
-				self.sendMessage(data);
+			client.on('newMessage', (data) => {
+				this.sendMessage(data);
 			});
 
-			client.on('disconnect', function () {
-				self.playersThatHaveLeft.push(player);
-				client.broadcast.to(self.roomId).emit("notification", { message: player.name + " has left the game!" });
+			client.on('disconnect', () => {
+					console.log("ACTIVE PLAYERS BEFORE LEAVE = " + this.activePlayers.length);
+				client.broadcast.to(this.roomId).emit("notification", { message: player.name + " has left the game!" });
 
-				self.isUsersTurn(player.userId, function (isUserTurn) {
-					self.activePlayers.splice(self.activePlayers.indexOf(player), 1)
-					if (self.activePlayers.length === 1) {
-						self.gameOver("NO_MORE_PLAYERS");
+				this.isUsersTurn(player.userId, (isUserTurn) => {
+					this.eloHandler.addPlaceToPlayer(player.userId, this.activePlayers.length + 1);
+
+					console.log("ACTIVE PLAYERS AFTER LEAVE = " + this.activePlayers.length);
+					if (this.activePlayers.length === 1) {
+						this.gameOver("NO_MORE_PLAYERS");
 						return;
 					}
-					if (self.activePlayers.length === 0) {
+					if (this.activePlayers.length === 0) {
 						return;
 					}
 					
 					if (isUserTurn) {
-						if (self.turn + 1 > self.activePlayers.length - 1) {
-							self.round++;
-							self.turn = 0;
+						if (this.turn + 1 > this.activePlayers.length - 1) {
+							this.round++;
+							this.turn = 0;
 						} else {
-							self.turn++;
+							this.turn++;
 						}
-						self.newTurn();
+						this.newTurn();
 					}		
 				});
 			});
@@ -140,10 +143,9 @@ class GameRoom {
 	}
 
 	waitBeforeStart() {
-		var self = this;
-		setTimeout(function () {
-			self.notifyPlayers("Game started!");
-			self.newTurn();
+		setTimeout( () => {
+			this.notifyPlayers("Game started!");
+			this.newTurn();
 		}, 7000);
 	}
 
@@ -156,28 +158,28 @@ class GameRoom {
 	}
 
 	getRandomCard(next) {
-		var self = this;
-		cardSchema.count().exec(function (err, count) {
-			for (var i = 0; i < count; i++) {
-				var random = Math.floor(Math.random() * count)
+		let random;
+		cardSchema.count().exec( (err, count) => {
+			for (let i = 0; i < count; i++) {
+			  random = Math.floor(Math.random() * count)
 				if (i === count - 1) {
 					next(new Card(1, "Unfortunently, there are no more cards", 1234));
 				}
-				if (self.usedIndexes.indexOf(random) === -1) {
+				if (this.usedIndexes.indexOf(random) === -1) {
 					break;
 				}
 			}
-			cardSchema.findOne().skip(random).exec(function (err, cardData) {
-				var card = new Card(cardData._id, cardData.description, cardData.year);
-				self.usedIndexes.push(random); //temporary solution. (prevents duplicate cards). 
-				self.usedCards.push(card);
+			cardSchema.findOne().skip(random).exec( (err, cardData) => {
+				let card = new Card(cardData._id, cardData.description, cardData.year);
+				this.usedIndexes.push(random); //temporary solution. (prevents duplicate cards). 
+				this.usedCards.push(card);
 				next(card);
 			});
 		});
 	}
 
 	getCardById(id) {
-		for (var i = 0; i < this.usedCards.length; i++) {
+		for (let i = 0; i < this.usedCards.length; i++) {
 			if (this.usedCards[i].id == id) {
 				return this.usedCards[i];
 			}
@@ -185,22 +187,21 @@ class GameRoom {
 	}
 
 	newTurn() {
-		var self = this;
-		this.activePlayers.forEach(function (player) {
+		this.activePlayers.forEach( (player) => {
 			//The player whos turn it is
-			if (self.getPlayerByIndex(self.turn) == player) {
-				self.io.to(player.socket.id).emit("notification", { message: "It's your turn" });
-				self.io.to(player.socket.id).emit("turn", {
-					round: self.round,
+			if (this.getPlayerByIndex(this.turn) == player) {
+				this.io.to(player.socket.id).emit("notification", { message: "It's your turn" });
+				this.io.to(player.socket.id).emit("turn", {
+					round: this.round,
 					playersCards: player.cards,
 					isPlayersTurn: true
 				});
 			} else {
-				self.io.to(player.socket.id).emit("notification", { message: "It's " + self.activePlayers[self.turn].name + "'s Turn!" });
-				self.io.to(player.socket.id).emit("turn", {
-					round: self.round,
-					nameOfTurn: self.activePlayers[self.turn].name,
-					cards: self.activePlayers[self.turn].cards,
+				this.io.to(player.socket.id).emit("notification", { message: "It's " + this.activePlayers[this.turn].name + "'s Turn!" });
+				this.io.to(player.socket.id).emit("turn", {
+					round: this.round,
+					nameOfTurn: this.activePlayers[this.turn].name,
+					cards: this.activePlayers[this.turn].cards,
 					isPlayersTurn: false
 				});
 			}
@@ -209,25 +210,23 @@ class GameRoom {
 	}
 
 	startCountdown() {
-		
-		var self = this;
-		clearInterval(self.turnTimer);
-		var timeleft = this.timeLimit;
+		clearInterval(this.turnTimer);
+		let timeleft = this.timeLimit;
 
 		this.io.to(this.roomId).emit('updateCountdown', {
 			timeLimit: timeleft
 		});
 
-		this.turnTimer = setInterval(function () {
-			if(self.activePlayers.length <= 0) {
-				self.gameOver("EMPTY_ROOM");
-			}
-			if (timeleft === 0) {
+		this.turnTimer = setInterval( () => {
 
-				self.io.to(self.getPlayerPropertyByIndex(self.turn,'socket').id).emit("forceNextTurn");
-				self.nextTurn(3000);
-				self.notifyPlayers("Time ran out! Switching to next player")
-				clearInterval(self.turnTimer);
+			if (timeleft === 0) {
+				if(this.activePlayers.length <= 0) {
+					this.gameOver("EMPTY_ROOM");
+				}
+				this.io.to(this.getPlayerPropertyByIndex(this.turn,'socket').id).emit("forceNextTurn");
+				this.nextTurn(3000);
+				this.notifyPlayers("Time ran out! Switching to next player")
+				clearInterval(this.turnTimer);
 			} else {
 				timeleft--;
 			}
@@ -235,7 +234,7 @@ class GameRoom {
 	}
 
 	sendMessage(data) {
-		var filteredMessage = data.message.replace(/[|&;$%@"<>()+,]/g, "");
+		let filteredMessage = data.message.replace(/[|&;$%@"<>()+,]/g, "");
 		this.io.to(this.roomId).emit('message', {
 			sender: data.sender,
 			message: filteredMessage
@@ -243,10 +242,11 @@ class GameRoom {
 	};
 
 	addCardToSlot(slotNum, card, player, next) {
+		let cards;
 		if (player != null) {//exists first round only
-			var cards = player.cards;
+		 cards = player.cards;
 		} else {
-			var cards = this.getPlayerPropertyByIndex(this.turn, 'cards');
+	 	 cards = this.getPlayerPropertyByIndex(this.turn, 'cards');
 		}
 		slotNum--; // fit with array index
 		if (cards[slotNum] === 0 || cards[slotNum] === null || cards[slotNum] === card) { //Ensure no cards are in the slot
@@ -263,8 +263,8 @@ class GameRoom {
 	}
 
 	removeUnlockedCards() {
-		var cards = this.getPlayerPropertyByIndex(this.turn,'cards');
-		for (var i = 0; i < cards.length; i++) {
+		let cards = this.getPlayerPropertyByIndex(this.turn,'cards');
+		for (let i = 0; i < cards.length; i++) {
 			if (cards[i] !== 0) {
 				if (!cards[i].isLocked) {
 					cards[i] = 0;
@@ -274,35 +274,34 @@ class GameRoom {
 	}
 
 	isValidDrop(data, card, next) {
-		var self = this;
-		this.isUsersTurn(data.userId, function (isUserTurn) {
+		this.isUsersTurn(data.userId, (isUserTurn) => {
 			if (!isUserTurn) {
 				next(false);
 				return;
 			}
-			self.addCardToSlot(data.slotNum, card, null, function (couldAddCard) {
+			this.addCardToSlot(data.slotNum, card, null, (couldAddCard) => {
 				if (!couldAddCard) {
 					next(false);
 					return;
 				}
-				var cards = self.getPlayerPropertyByIndex(self.turn,'cards').slice(0);
-				var cards = cards.filter(self.removeEmptySlots)
+				let cards = this.getPlayerPropertyByIndex(this.turn,'cards').slice(0);
+			  cards = cards.filter(this.removeEmptySlots)
 
 				if (cards.length === 1) {
 					next(true); //First drop.
 					return;
 				}
 				//Validate if all cards are in order by year.
-				for (var i = 0; i <= cards.length; i++) {
+				for (let i = 0; i <= cards.length; i++) {
 					if (cards[i + 1] == null) {
 						next(true);
 						return;
 					}
-					var current = Number(cards[i].year);
-					var nextCard = Number(cards[i + 1].year);
+					let current = Number(cards[i].year);
+					let nextCard = Number(cards[i + 1].year);
 
 					if (current > nextCard) {
-						self.removeUnlockedCards();
+						this.removeUnlockedCards();
 						next(false);
 						return;
 					}
@@ -317,30 +316,29 @@ class GameRoom {
 	}
 
 	nextTurn(delay) {
-		var cards = this.getPlayerPropertyByIndex(this.turn, 'cards');
-		cards.forEach(function (card) {
+		let cards = this.getPlayerPropertyByIndex(this.turn, 'cards');
+		cards.forEach( (card) => {
 			if (card !== 0) {
 				card.isLocked = true;
 			}
 		});
-		var self = this;
 		clearInterval(this.turnTimer);
-		setTimeout(function () {
-			if (self.turn + 1 > self.activePlayers.length - 1) {
-				if (self.lastRound) {
-					if (self.playersHaveAllCards.length > 1) {
-						self.gameOver("GAME_DRAW");
+		setTimeout( () => {
+			if (this.turn + 1 > this.activePlayers.length - 1) {
+				if (this.lastRound) {
+					if (this.playersHaveAllCards.length > 1) {
+						this.gameOver("GAME_DRAW");
 					} else {
-						self.gameOver("GAME_WON");
+						this.gameOver("GAME_WON");
 					}
 					return;
 				}
-				self.round++;
-				self.turn = 0;
+				this.round++;
+				this.turn = 0;
 			} else {
-				self.turn++;
+				this.turn++;
 			}
-			self.newTurn();
+			this.newTurn();
 		}, delay);
 	};
 
@@ -364,19 +362,16 @@ class GameRoom {
 	}
 
 	gameOver(reason) {
-		var self = this;
 		clearInterval(this.turnTimer);
-		var allPlayersInGame = this.activePlayers.concat(this.playersThatHaveLeft)
-		calculateElo(allPlayersInGame);
-		var winnerNames = "";
-
+		let winnerNames = "";
+		this.doEloUpdate();
 		switch (reason) {
 			case "GAME_WON":
 				updatePlayerStatistics(this.getPlayersHaveAllCardsPropertyByIndex(0, 'userId'), "ADD_WIN");
 				winnerNames += "\n" + this.getPlayersHaveAllCardsPropertyByIndex(0, 'name');
 				break;
 			case "GAME_DRAW":
-				this.playersHaveAllCards.forEach(function (player) {
+				this.playersHaveAllCards.forEach( (player) => {
 					updatePlayerStatistics(player.userId, "ADD_DRAW");
 					winnerNames += "\n" + player.name;
 				});
@@ -394,9 +389,9 @@ class GameRoom {
 
 		this.io.to(this.roomId).emit("gameOver", { reason: reason, winners: winnerNames })
 
-		setTimeout(function () {
-			self.io.to(self.roomId).emit("redirectToLobby");
-			self.gameOverCallback(self);
+		setTimeout( () => {
+			this.io.to(this.roomId).emit("redirectToLobby");
+			this.gameOverCallback(this);
 		}, 7000)
 	}
 
@@ -426,6 +421,49 @@ class GameRoom {
 			return null;
 		}
 	}
+
+	doEloUpdate() {
+		let players = this.activePlayers.slice();
+		let winningPlayers = this.playersHaveAllCards.slice();
+		let eloPlayers = [];
+
+		players.sort(this.compare);
+
+		for(let i = 0; i < players.length ; i++) {
+			this.containsObject(players[i], winningPlayers, (isWinner) =>  {
+				if(isWinner) {
+					this.eloHandler.addPlaceToPlayer(players[i].userId, 1);
+				}else {
+					this.eloHandler.addPlaceToPlayer(players[i].userId, i+1);
+				}
+			});
+		}
+		this.eloHandler.calculateElo();
+	}
+
+  containsObject(obj, arr, next) {
+    let i;
+    for (i = 0; i < arr.length; i++) {
+        if (arr[i] === obj) {
+            next(true);
+						return;
+        }
+    }
+    next(false);
+	}
+
+  compare(a, b) {
+  const cardsA = a.cards.length;
+  const cardsB = b.cards.length;
+
+  let comparison = 0;
+  if (cardsA > cardsB) {
+    comparison = 1;
+  } else if (cardsA < cardsB) {
+    comparison = -1;
+  }
+  return comparison;
+}
 }
 module.exports = GameRoom;
 
