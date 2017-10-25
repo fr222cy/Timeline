@@ -26,6 +26,7 @@ class GameRoom {
 		this.gameOverCallback = gameOverCallback;
 		this.playersHaveAllCards = [];
 		this.lastRound = false;
+		this.isGameOver = false;
 		this.eloHandler;
 	}
 
@@ -363,41 +364,43 @@ class GameRoom {
 
 	gameOver(reason) {
 		clearInterval(this.turnTimer);
-		let winnerNames = "";
-		
-		switch (reason) {
-			case "GAME_WON":
-				this.doEloUpdate();
-				updatePlayerStatistics(this.getPlayersHaveAllCardsPropertyByIndex(0, 'userId'), "ADD_WIN");
-				winnerNames += "\n" + this.getPlayersHaveAllCardsPropertyByIndex(0, 'name');
-				
-				break;
-			case "GAME_DRAW":
-				this.doEloUpdate();
-				this.playersHaveAllCards.forEach( (player) => {
-					updatePlayerStatistics(player.userId, "ADD_DRAW");
-					winnerNames += "\n" + player.name;
-				});
-				
-				break;
-			case "NO_MORE_PLAYERS":
-				if(this.activePlayers.length > 0) {
+		if(!this.isGameOver) {
+			this.isGameOver = true;
+			let winnerNames = "";
+			switch (reason) {
+				case "GAME_WON":
 					this.doEloUpdate();
-					updatePlayerStatistics(this.getPlayerPropertyByIndex(0, 'userId'), "ADD_WIN");
-				}
-				break;
-			case "NO_MORE_CARDS":
-				break;
-			case "EMPTY_ROOM":
-				break;
+					updatePlayerStatistics(this.getPlayersHaveAllCardsPropertyByIndex(0, 'userId'), "ADD_WIN");
+					winnerNames += "\n" + this.getPlayersHaveAllCardsPropertyByIndex(0, 'name');
+					
+					break;
+				case "GAME_DRAW":
+					this.doEloUpdate();
+					this.playersHaveAllCards.forEach( (player) => {
+						updatePlayerStatistics(player.userId, "ADD_DRAW");
+						winnerNames += "\n" + player.name;
+					});
+					
+					break;
+				case "NO_MORE_PLAYERS":
+					if(this.activePlayers.length > 0) {
+						this.doEloUpdate();
+						updatePlayerStatistics(this.getPlayerPropertyByIndex(0, 'userId'), "ADD_WIN");
+					}
+					break;
+				case "NO_MORE_CARDS":
+					break;
+				case "EMPTY_ROOM":
+					break;
+			}
+
+			this.io.to(this.roomId).emit("gameOver", { reason: reason, winners: winnerNames })
+
+			setTimeout( () => {
+				this.io.to(this.roomId).emit("redirectToLobby");
+				this.gameOverCallback(this);
+			}, 7000)
 		}
-
-		this.io.to(this.roomId).emit("gameOver", { reason: reason, winners: winnerNames })
-
-		setTimeout( () => {
-			this.io.to(this.roomId).emit("redirectToLobby");
-			this.gameOverCallback(this);
-		}, 7000)
 	}
 
 	getPlayerPropertyByIndex(index, property) {
