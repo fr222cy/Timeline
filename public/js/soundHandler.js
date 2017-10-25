@@ -20,7 +20,7 @@ cardDraw.play();
 }
 
 function playCorrectSlotSound() {
-correctSlot.play();
+cardDraw.play();
 }
 
 function playWrongSlotSound() {
